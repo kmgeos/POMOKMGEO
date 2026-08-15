@@ -1,3 +1,6 @@
+// Variable para rastrear la tarea actualmente seleccionada
+let selectedTaskFullTitle = "LABORAL PELICULA - Ver escena 1";
+
 function renderGroups() {
   groupsContainer.innerHTML = '';
   groupAddSelect.innerHTML = '';
@@ -10,10 +13,38 @@ function renderGroups() {
     optGroup.textContent = group.name;
     groupAddSelect.appendChild(optGroup);
 
-    // Renderizar vista de la materia
+    // Llenar selector global de tarea activa (cabecera del grupo)
+    const optTaskGroup = document.createElement('option');
+    optTaskGroup.value = group.name;
+    optTaskGroup.textContent = `[Materia] ${group.name}`;
+    activeTaskSelect.appendChild(optTaskGroup);
+
+    // Renderizar vista de las tareas del grupo
     const groupEl = document.createElement('div');
     groupEl.className = 'group-item';
     const completedCount = group.tasks.filter(t => t.completed).length;
+
+    const tasksHtml = group.tasks.map(task => {
+      const fullTaskName = `${group.name} - ${task.text}`;
+      const isSelected = (selectedTaskFullTitle === fullTaskName);
+
+      // Agregar opción al dropdown general
+      const optTask = document.createElement('option');
+      optTask.value = fullTaskName;
+      optTask.textContent = `  └ ${task.text}`;
+      if (isSelected) optTask.selected = true;
+      activeTaskSelect.appendChild(optTask);
+
+      return `
+        <div class="task-row ${task.completed ? 'completed' : ''} ${isSelected ? 'task-active' : ''}">
+          <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${group.id}, ${task.id})">
+          <span class="task-text">${task.text}</span>
+          <button class="select-task-btn ${isSelected ? 'active' : ''}" onclick="selectTaskDirectly('${escapeQuotes(fullTaskName)}')">
+            ${isSelected ? '★ Activa' : 'Seleccionar'}
+          </button>
+        </div>
+      `;
+    }).join('');
 
     groupEl.innerHTML = `
       <div class="group-header" onclick="toggleGroup(${group.id})">
@@ -21,31 +52,31 @@ function renderGroups() {
         <small>${completedCount}/${group.tasks.length}</small>
       </div>
       <div class="group-tasks ${group.open ? 'open' : ''}">
-        ${group.tasks.map(task => `
-          <div class="task-row ${task.completed ? 'completed' : ''}">
-            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${group.id}, ${task.id})">
-            <span>${task.text}</span>
-          </div>
-        `).join('')}
+        ${tasksHtml.length > 0 ? tasksHtml : '<div style="font-size:0.8rem; opacity:0.6; padding: 5px;">No hay tareas en esta materia</div>'}
       </div>
     `;
     groupsContainer.appendChild(groupEl);
-
-    // Llenar selector global de tarea activa
-    const optTaskGroup = document.createElement('option');
-    optTaskGroup.value = group.name;
-    optTaskGroup.textContent = `[Materia] ${group.name}`;
-    activeTaskSelect.appendChild(optTaskGroup);
-
-    group.tasks.forEach(task => {
-      const optTask = document.createElement('option');
-      optTask.value = `${group.name} - ${task.text}`;
-      optTask.textContent = `  └ ${task.text}`;
-      activeTaskSelect.appendChild(optTask);
-    });
   });
 
   updateTaskTitle();
+}
+
+// Función auxiliar para prevenir fallos con comillas o apóstrofes en los nombres de las tareas
+function escapeQuotes(str) {
+  return str.replace(/'/g, "\\'");
+}
+
+// Seleccionar tarea directamente usando el botón "Seleccionar" en la lista
+function selectTaskDirectly(fullTaskName) {
+  selectedTaskFullTitle = fullTaskName;
+  activeTaskSelect.value = fullTaskName;
+  renderGroups();
+}
+
+// Cambiar tarea desde el selector desplegable superior
+function onActiveTaskChange() {
+  selectedTaskFullTitle = activeTaskSelect.value;
+  renderGroups();
 }
 
 function toggleGroup(groupId) {
@@ -75,8 +106,13 @@ function addTask() {
   if (!groupId || !input.value.trim()) return;
   const group = groups.find(g => g.id === groupId);
   if (group) {
-    group.tasks.push({ id: Date.now(), text: input.value.trim(), completed: false });
+    const newTask = { id: Date.now(), text: input.value.trim(), completed: false };
+    group.tasks.push(newTask);
     group.open = true;
+    
+    // Al crear una tarea nueva, pasa a ser la seleccionada inmediatamente
+    selectedTaskFullTitle = `${group.name} - ${newTask.text}`;
+    
     input.value = '';
     renderGroups();
   }
