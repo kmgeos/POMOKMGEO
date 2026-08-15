@@ -252,19 +252,54 @@ body {
 
 .group-tasks.open { display: block; }
 
+/* FILAS DE TAREA Y BOTÓN DE SELECCIÓN DIRECTA */
 .task-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   margin: 8px 0;
   background: rgba(255, 255, 255, 0.1);
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: background 0.2s;
 }
 
-.task-row.completed span {
+.task-row.task-active {
+  background: rgba(255, 255, 255, 0.25);
+  border-left: 4px solid #ffffff;
+}
+
+.task-row.completed .task-text {
   text-decoration: line-through;
   opacity: 0.6;
+}
+
+.task-text {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.select-task-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.select-task-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.select-task-btn.active {
+  background: #ffffff;
+  color: var(--btn-text);
+  border-color: #ffffff;
 }
 
 .add-form {
