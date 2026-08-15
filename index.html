@@ -23,25 +23,25 @@
       <button class="mode-btn" id="btn-longBreak" onclick="switchMode('longBreak')">Long Break</button>
     </div>
 
-    <!-- 1. GIF -->
+    <!-- GIF -->
     <div class="gif-container">
       <img id="gif-display" class="gif-display" src="https://i.gifer.com/XOsX.gif" alt="GIF Pomodoro">
     </div>
 
-    <!-- 2. NOMBRE DE LA TAREA SELECCIONADA -->
+    <!-- NOMBRE DE LA TAREA SELECCIONADA -->
     <div class="task-title-display" id="task-title-display">
-      LABORAL PELICULA
+      SIN TAREA SELECCIONADA
     </div>
 
-    <!-- 3. CANTIDAD DE POMODOROS -->
+    <!-- CANTIDAD DE POMODOROS -->
     <div class="pomodoro-counter" id="pomodoro-counter">
       Pomodoro #1 / 4
     </div>
 
-    <!-- 4. TIEMPO -->
+    <!-- TIEMPO -->
     <div class="timer-display" id="timer-display">25:00</div>
 
-    <!-- 5. BOTONES -->
+    <!-- BOTONES CONTROL -->
     <div class="controls-row">
       <button class="secondary-btn" onclick="resetTimer()" title="Reiniciar">↺</button>
       <button class="main-btn" id="start-btn" onclick="toggleTimer()">START</button>
@@ -55,7 +55,7 @@
     
     <div class="active-task-selector">
       <label>Tarea Actual en Trabajo:</label>
-      <select id="active-task-select" onchange="updateTaskTitle()"></select>
+      <select id="active-task-select" onchange="onActiveTaskChange()"></select>
     </div>
 
     <div id="groups-container"></div>
