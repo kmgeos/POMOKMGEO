@@ -94,7 +94,7 @@ function onTimerComplete() {
   }
   
   let nextMode = 'pomodoro';
-  // ... resto del código ...
+
   // Cambiar de modo y actualizar tiempos antes de evaluar el auto-start
   switchMode(nextMode);
 
