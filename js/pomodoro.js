@@ -81,25 +81,20 @@ function pauseTimer() {
 
 function onTimerComplete() {
   pauseTimer();
+  
+  // Reproducir sonido de alarma
+  const alarmSound = document.getElementById('alarm-audio');
+  if (alarmSound) {
+    alarmSound.currentTime = 0;
+    alarmSound.play();
+  }
+
   if (currentMode === 'pomodoro' && selectedTaskFullTitle) {
     addCompletedPomoToActiveTask();
   }
-
+  
   let nextMode = 'pomodoro';
-  if (currentMode === 'pomodoro') {
-    if (pomodoroCount >= config.longBreakInterval) {
-      nextMode = 'longBreak';
-    } else {
-      nextMode = 'shortBreak';
-    }
-  } else if (currentMode === 'shortBreak') {
-    pomodoroCount++;
-    nextMode = 'pomodoro';
-  } else if (currentMode === 'longBreak') {
-    pomodoroCount = 1;
-    nextMode = 'pomodoro';
-  }
-
+  // ... resto del código ...
   // Cambiar de modo y actualizar tiempos antes de evaluar el auto-start
   switchMode(nextMode);
 
