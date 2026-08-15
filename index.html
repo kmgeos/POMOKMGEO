@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Custom Theme</title>
+  <style>
+    :root {
+      --color-pomodoro: #6b4c9a;   /* Morado */
+      --color-shortBreak: #2d8883; /* Verde azulado */
+      --color-longBreak: #397097;  /* Verde oscuro / Azul */
+      
+      --bg-color: var(--color-pomodoro);
+      --card-bg: rgba(255, 255, 255, 0.15);
+      --text-color: #ffffff;
+      --btn-bg: #ffffff;
+      --btn-text: var(--color-pomodoro);
+    }
+
+    body.mode-pomodoro {
+      --bg-color: var(--color-pomodoro);
+      --btn-text: var(--color-pomodoro);
+    }
+    body.mode-shortBreak {
+      --bg-color: var(--color-shortBreak);
+      --btn-text: var(--color-shortBreak);
+    }
+    body.mode-longBreak {
+      --bg-color: var(--color-longBreak);
+      --btn-text: var(--color-longBreak);
+    }
+
+    /* MODO OSCURO MIENTRAS CORRE (FOCUS) */
+    body.running-dark {
+      --bg-color: #000000 !important;
+      --card-bg: #1e1e1e !important;
+      --btn-text: #000000 !important;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+      transition: background-color 0.4s ease;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .app-container { grid-template-columns: 1fr; }
+    }
+
+    /* TARJETAS */
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      backdrop-filter: blur(5px);
+      transition: background 0.3s;
+    }
+
+    .timer-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 15px;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      opacity: 0.8;
+    }
+
+    .mode-btn.active {
+      background: rgba(0, 0, 0, 0.2);
+      opacity: 1;
+    }
+
+    /* 1. GIF */
+    .gif-container {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      margin-bottom: 15px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .gif-display {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 2. NOMBRE DE TAREA */
+    .task-title-display {
+      font-size: 1.1rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      opacity: 0.95;
+    }
+
+    /* 3. CANTIDAD DE POMODOROS */
+    .pomodoro-counter {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      padding: 4px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    /* 4. TIEMPO */
+    .timer-display {
+      font-size: 5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      line-height: 1;
+    }
+
+    /* 5. BOTONES */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .main-btn {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      padding: 12px 35px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      min-width: 140px;
+      transition: background-color 0.3s;
+    }
+
+    .secondary-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* SECCIÓN SELECCIÓN DE TAREA Y GRUPOS */
+    .tasks-section h2 {
+      margin-bottom: 15px;
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+      padding-bottom: 8px;
+    }
+
+    .active-task-selector {
+      background: rgba(0, 0, 0, 0.15);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .active-task-selector label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+      opacity: 0.8;
+      text-transform: uppercase;
+    }
+
+    .active-task-selector select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+
+    .group-item {
+      margin-bottom: 15px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .group-header {
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .group-tasks {
+      padding: 10px 15px;
+      display: none;
+    }
+
+    .group-tasks.open { display: block; }
+
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+
+    .task-row.completed span {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .add-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 15px;
+      background: rgba(0,0,0,0.1);
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .add-form input, .add-form select, .add-form button {
+      padding: 8px;
+      border-radius: 4px;
+      border: none;
+    }
+
+    .add-form button {
+      background: rgba(255,255,255,0.25);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* MODAL SETTINGS */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: white;
+      color: #333;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      color: #888;
+      font-weight: bold;
+    }
+
+    .close-btn { cursor: pointer; font-size: 1.2rem; }
+
+    .section-title {
+      font-size: 0.85rem;
+      color: #888;
+      font-weight: bold;
+      margin-top: 15px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      border-bottom: 1px dashed #eee;
+      padding-bottom: 4px;
+    }
+
+    .setting-group { margin-bottom: 15px; }
+
+    .setting-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #555;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .time-inputs { display: flex; gap: 10px; }
+
+    .time-field { flex: 1; }
+
+    .time-field span {
+      display: block;
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .time-field input, .setting-group input[type="text"], .setting-group input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      color: #444;
+      font-weight: 500;
+    }
+
+    .color-pickers-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .color-box-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .color-box-wrapper span {
+      font-size: 0.65rem;
+      color: #777;
+      font-weight: bold;
+    }
+
+    .color-input-box {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: none;
+    }
+
+    .color-input-box::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-input-box::-webkit-color-swatch { border: none; border-radius: 8px; }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider { background-color: #8bc34a; }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .small-win-btn {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+
+    .save-btn {
+      background: #4a4a4a;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="mode-pomodoro">
+
+<div class="app-container">
+  
+  <!-- SECCIÓN TEMPORIZADOR -->
+  <div class="card timer-section">
+    <div class="top-bar">
+      <button class="icon-btn" id="open-settings">⚙ Setting</button>
+    </div>
+
+    <div class="mode-buttons">
+      <button class="mode-btn active" id="btn-pomodoro" onclick="switchMode('pomodoro')">Pomodoro</button>
+      <button class="mode-btn" id="btn-shortBreak" onclick="switchMode('shortBreak')">Short Break</button>
+      <button class="mode-btn" id="btn-longBreak" onclick="switchMode('longBreak')">Long Break</button>
+    </div>
+
+    <!-- 1. GIF -->
+    <div class="gif-container">
+      <img id="gif-display" class="gif-display" src="https://i.gifer.com/XOsX.gif" alt="GIF Pomodoro">
+    </div>
+
+    <!-- 2. NOMBRE DE LA TAREA SELECCIONADA -->
+    <div class="task-title-display" id="task-title-display">
+      LABORAL PELICULA
+    </div>
+
+    <!-- 3. CANTIDAD DE POMODOROS -->
+    <div class="pomodoro-counter" id="pomodoro-counter">
+      Pomodoro #1 / 4
+    </div>
+
+    <!-- 4. TIEMPO -->
+    <div class="timer-display" id="timer-display">25:00</div>
+
+    <!-- 5. BOTONES -->
+    <div class="controls-row">
+      <button class="secondary-btn" onclick="resetTimer()" title="Reiniciar">↺</button>
+      <button class="main-btn" id="start-btn" onclick="toggleTimer()">START</button>
+      <button class="secondary-btn" onclick="skipPhase()" title="Saltar">⏭</button>
+    </div>
+  </div>
+
+  <!-- SECCIÓN DE MATERIAS Y TAREAS -->
+  <div class="card tasks-section">
+    <h2>Tasks</h2>
+    
+    <div class="active-task-selector">
+      <label>Tarea Actual en Trabajo:</label>
+      <select id="active-task-select" onchange="updateTaskTitle()"></select>
+    </div>
+
+    <div id="groups-container"></div>
+
+    <div class="add-form">
+      <input type="text" id="new-group-name" placeholder="+ Nueva materia/grupo...">
+      <button onclick="addGroup()">Crear Materia</button>
+    </div>
+
+    <div class="add-form">
+      <select id="group-add-select"></select>
+      <input type="text" id="new-task-name" placeholder="+ Nueva tarea...">
+      <button onclick="addTask()">Agregar Tarea</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- VENTANA MODAL (SETTING) -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span>⚙ SETTING</span>
+      <span class="close-btn" onclick="closeSettings()">&times;</span>
+    </div>
+
+    <!-- SECCIÓN TIMER -->
+    <div class="section-title">⏱ TIMER</div>
+
+    <div class="setting-group">
+      <label>Time (minutes)</label>
+      <div class="time-inputs">
+        <div class="time-field">
+          <span>Pomodoro</span>
+          <input type="number" id="input-pomo" value="25" min="1">
+        </div>
+        <div class="time-field">
+          <span>Short Break</span>
+          <input type="number" id="input-short" value="5" min="1">
+        </div>
+        <div class="time-field">
+          <span>Long Break</span>
+          <input type="number" id="input-long" value="15" min="1">
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="toggle-row">
+        <span>Long Break interval</span>
+        <input type="number" id="input-interval" value="4" min="1" style="width: 70px; text-align: center;">
+      </div>
+    </div>
+
+    <!-- SECCIÓN THEME -->
+    <div class="section-title">🎨 THEME</div>
+
+    <div class="setting-group">
+      <div class="toggle-row">
+        <span>Color Themes</span>
+        <div class="color-pickers-row">
+          <div class="color-box-wrapper">
+            <input type="color" id="picker-pomo" class="color-input-box" value="#6b4c9a" title="Color Pomodoro">
+            <span>Pomo</span>
+          </div>
+          <div class="color-box-wrapper">
+            <input type="color" id="picker-short" class="color-input-box" value="#2d8883" title="Color Short Break">
+            <span>Short</span>
+          </div>
+          <div class="color-box-wrapper">
+            <input type="color" id="picker-long" class="color-input-box" value="#397097" title="Color Long Break">
+            <span>Long</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="toggle-row">
+        <span>Dark Mode when running</span>
+        <label class="switch">
+          <input type="checkbox" id="input-dark-running" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="toggle-row">
+        <span>Small Window</span>
+        <button class="small-win-btn" onclick="openSmallWindow()">Open ↗</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label>🖼 GIF URL</label>
+      <input type="text" id="input-gif" value="https://i.gifer.com/XOsX.gif">
+    </div>
+
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveSettings()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let config = {
+    pomodoro: 25,
+    shortBreak: 5,
+    longBreak: 15,
+    longBreakInterval: 4,
+    darkModeRunning: true,
+    colorPomodoro: '#6b4c9a',
+    colorShort: '#2d8883',
+    colorLong: '#397097',
+    gifUrl: 'https://i.gifer.com/XOsX.gif'
+  };
+
+  let currentMode = 'pomodoro'; 
+  let timeLeft = config.pomodoro * 60;
+  let timerInterval = null;
+  let isRunning = false;
+  
+  // Pomodoro actual en el ciclo (ej. 1 de 4, 2 de 4, etc.)
+  let pomodoroCount = 1;
+
+  let groups = [
+    {
+      id: 1,
+      name: "LABORAL PELICULA",
+      open: true,
+      tasks: [
+        { id: 101, text: "Ver escena 1", completed: false }
+      ]
+    }
+  ];
+
+  const timerDisplay = document.getElementById('timer-display');
+  const startBtn = document.getElementById('start-btn');
+  const gifDisplay = document.getElementById('gif-display');
+  const groupsContainer = document.getElementById('groups-container');
+  const activeTaskSelect = document.getElementById('active-task-select');
+  const groupAddSelect = document.getElementById('group-add-select');
+  const modal = document.getElementById('modal-settings');
+  const counterDisplay = document.getElementById('pomodoro-counter');
+  const taskTitleDisplay = document.getElementById('task-title-display');
+
+  function applyColors() {
+    document.documentElement.style.setProperty('--color-pomodoro', config.colorPomodoro);
+    document.documentElement.style.setProperty('--color-shortBreak', config.colorShort);
+    document.documentElement.style.setProperty('--color-longBreak', config.colorLong);
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function updateCounterDisplay() {
+    if (currentMode === 'longBreak') {
+      counterDisplay.textContent = "Descanso Largo";
+    } else if (currentMode === 'shortBreak') {
+      counterDisplay.textContent = `Descanso Corto (${pomodoroCount} / ${config.longBreakInterval})`;
+    } else {
+      counterDisplay.textContent = `Pomodoro #${pomodoroCount} / ${config.longBreakInterval}`;
+    }
+  }
+
+  function updateTaskTitle() {
+    const selectedTaskVal = activeTaskSelect.value;
+    if (selectedTaskVal) {
+      taskTitleDisplay.textContent = selectedTaskVal.toUpperCase();
+    } else {
+      taskTitleDisplay.textContent = "SIN TAREA SELECCIONADA";
+    }
+  }
+
+  function updateTheme() {
+    document.body.className = `mode-${currentMode}`;
+    if (isRunning && config.darkModeRunning) {
+      document.body.classList.add('running-dark');
+    }
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btn-${currentMode}`).classList.add('active');
+  }
+
+  function toggleTimer() {
+    if (isRunning) {
+      pauseTimer();
+    } else {
+      startTimer();
+    }
+  }
+
+  function startTimer() {
+    isRunning = true;
+    startBtn.textContent = "PAUSE";
+    if (config.darkModeRunning) {
+      document.body.classList.add('running-dark');
+    }
+    timerInterval = setInterval(() => {
+      if (timeLeft > 0) {
+        timeLeft--;
+        updateTimerDisplay();
+      } else {
+        onTimerComplete();
+      }
+    }, 1000);
+  }
+
+  function pauseTimer() {
+    clearInterval(timerInterval);
+    isRunning = false;
+    startBtn.textContent = "START";
+    document.body.classList.remove('running-dark');
+  }
+
+  /* NUEVA LÓGICA DE INTERVALO:
+     - Cada Pomodoro se evalúa al terminar:
+       Si es el último Pomodoro de la ronda (pomodoroCount == intervalo) -> Toca Descanso Largo.
+       De lo contrario -> Toca Descanso Corto.
+  */
+  function onTimerComplete() {
+    pauseTimer();
+
+    if (currentMode === 'pomodoro') {
+      if (pomodoroCount >= config.longBreakInterval) {
+        // Alcanzamos el Pomodoro final del intervalo -> Toca descanso largo
+        switchMode('longBreak');
+      } else {
+        // Es un Pomodoro intermedio -> Toca descanso corto
+        switchMode('shortBreak');
+      }
+    } else if (currentMode === 'shortBreak') {
+      // Al terminar el descanso corto, avanzamos al siguiente Pomodoro
+      pomodoroCount++;
+      switchMode('pomodoro');
+    } else if (currentMode === 'longBreak') {
+      // Al terminar el descanso largo, reiniciamos el conteo
+      pomodoroCount = 1;
+      switchMode('pomodoro');
+    }
+  }
+
+  function resetTimer() {
+    pauseTimer();
+    timeLeft = config[currentMode] * 60;
+    updateTimerDisplay();
+  }
+
+  function skipPhase() {
+    onTimerComplete();
+  }
+
+  function switchMode(mode) {
+    pauseTimer();
+    currentMode = mode;
+    updateTheme();
+    timeLeft = config[mode] * 60;
+    updateTimerDisplay();
+    updateCounterDisplay();
+  }
+
+  function openSmallWindow() {
+    window.open(window.location.href, 'PomodoroSmall', 'width=360,height=520,resizable=yes');
+  }
+
+  document.getElementById('open-settings').onclick = () => modal.classList.add('active');
+  function closeSettings() { modal.classList.remove('active'); }
+
+  function saveSettings() {
+    config.pomodoro = parseInt(document.getElementById('input-pomo').value) || 25;
+    config.shortBreak = parseInt(document.getElementById('input-short').value) || 5;
+    config.longBreak = parseInt(document.getElementById('input-long').value) || 15;
+    config.longBreakInterval = parseInt(document.getElementById('input-interval').value) || 4;
+    
+    config.darkModeRunning = document.getElementById('input-dark-running').checked;
+    
+    config.colorPomodoro = document.getElementById('picker-pomo').value;
+    config.colorShort = document.getElementById('picker-short').value;
+    config.colorLong = document.getElementById('picker-long').value;
+
+    const newGif = document.getElementById('input-gif').value;
+    if(newGif) {
+      config.gifUrl = newGif;
+      gifDisplay.src = config.gifUrl;
+    }
+
+    applyColors();
+    closeSettings();
+    switchMode(currentMode);
+  }
+
+  function renderGroups() {
+    groupsContainer.innerHTML = '';
+    groupAddSelect.innerHTML = '';
+    activeTaskSelect.innerHTML = '';
+
+    groups.forEach(group => {
+      // Llenar selector de materias para crear tareas
+      const optGroup = document.createElement('option');
+      optGroup.value = group.id;
+      optGroup.textContent = group.name;
+      groupAddSelect.appendChild(optGroup);
+
+      // Renderizar vista de la materia
+      const groupEl = document.createElement('div');
+      groupEl.className = 'group-item';
+      const completedCount = group.tasks.filter(t => t.completed).length;
+
+      groupEl.innerHTML = `
+        <div class="group-header" onclick="toggleGroup(${group.id})">
+          <span>${group.open ? '▼' : '▶'} ${group.name}</span>
+          <small>${completedCount}/${group.tasks.length}</small>
+        </div>
+        <div class="group-tasks ${group.open ? 'open' : ''}">
+          ${group.tasks.map(task => `
+            <div class="task-row ${task.completed ? 'completed' : ''}">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${group.id}, ${task.id})">
+              <span>${task.text}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      groupsContainer.appendChild(groupEl);
+
+      // Llenar selector global de tarea activa
+      const optTaskGroup = document.createElement('option');
+      optTaskGroup.value = group.name;
+      optTaskGroup.textContent = `[Materia] ${group.name}`;
+      activeTaskSelect.appendChild(optTaskGroup);
+
+      group.tasks.forEach(task => {
+        const optTask = document.createElement('option');
+        optTask.value = `${group.name} - ${task.text}`;
+        optTask.textContent = `  └ ${task.text}`;
+        activeTaskSelect.appendChild(optTask);
+      });
+    });
+
+    updateTaskTitle();
+  }
+
+  function toggleGroup(groupId) {
+    const group = groups.find(g => g.id === groupId);
+    if (group) { group.open = !group.open; renderGroups(); }
+  }
+
+  function toggleTask(groupId, taskId) {
+    const group = groups.find(g => g.id === groupId);
+    if (group) {
+      const task = group.tasks.find(t => t.id === taskId);
+      if (task) { task.completed = !task.completed; renderGroups(); }
+    }
+  }
+
+  function addGroup() {
+    const input = document.getElementById('new-group-name');
+    if (!input.value.trim()) return;
+    groups.push({ id: Date.now(), name: input.value.trim(), open: true, tasks: [] });
+    input.value = '';
+    renderGroups();
+  }
+
+  function addTask() {
+    const input = document.getElementById('new-task-name');
+    const groupId = parseInt(groupAddSelect.value);
+    if (!groupId || !input.value.trim()) return;
+    const group = groups.find(g => g.id === groupId);
+    if (group) {
+      group.tasks.push({ id: Date.now(), text: input.value.trim(), completed: false });
+      group.open = true;
+      input.value = '';
+      renderGroups();
+    }
+  }
+
+  applyColors();
+  updateTimerDisplay();
+  renderGroups();
+  updateCounterDisplay();
+</script>
+
+</body>
+</html>
