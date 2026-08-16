@@ -52,6 +52,14 @@ function updateTheme() {
 
 function toggleTimer() {
   if (isTransitioning) return; // Evita interferir durante la pausa de transición
+
+  // Reproducir sonido al hacer clic en Start / Pause
+  const clickSound = document.getElementById('click-audio');
+  if (clickSound) {
+    clickSound.currentTime = 0; 
+    clickSound.play();
+  }
+
   if (isRunning) {
     pauseTimer();
   } else {
@@ -85,6 +93,13 @@ function pauseTimer() {
 
 function onTimerComplete() {
   pauseTimer();
+
+  // Reproducir sonido de alarma al terminar el tiempo
+  const alarmSound = document.getElementById('alarm-audio');
+  if (alarmSound) {
+    alarmSound.currentTime = 0;
+    alarmSound.play();
+  }
 
   // Si estábamos en modo pomodoro, sumamos +1 pomodoro completado a la tarea activa si existe
   if (currentMode === 'pomodoro' && selectedTaskFullTitle) {
