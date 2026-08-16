@@ -3,6 +3,8 @@ let timeLeft = config.pomodoro * 60;
 let timerInterval = null;
 let isRunning = false;
 let pomodoroCount = 1;
+let isTransitioning = false; // Bandera para controlar la pausa de los 10 segundos
+
 const timerDisplay = document.getElementById('timer-display');
 const startBtn = document.getElementById('start-btn');
 const gifDisplay = document.getElementById('gif-display');
@@ -49,6 +51,7 @@ function updateTheme() {
 }
 
 function toggleTimer() {
+  if (isTransitioning) return; // Evita interferir durante la pausa de transición
   if (isRunning) {
     pauseTimer();
   } else {
@@ -57,6 +60,7 @@ function toggleTimer() {
 }
 
 function startTimer() {
+  isTransitioning = false;
   isRunning = true;
   startBtn.textContent = "PAUSE";
   if (config.darkModeRunning) {
@@ -81,29 +85,58 @@ function pauseTimer() {
 
 function onTimerComplete() {
   pauseTimer();
-  
-  // Reproducir sonido de alarma
-  const alarmSound = document.getElementById('alarm-audio');
-  if (alarmSound) {
-    alarmSound.currentTime = 0;
-    alarmSound.play();
-  }
 
+  // Si estábamos en modo pomodoro, sumamos +1 pomodoro completado a la tarea activa si existe
   if (currentMode === 'pomodoro' && selectedTaskFullTitle) {
     addCompletedPomoToActiveTask();
   }
-  
-  let nextMode = 'pomodoro';
 
-  // Cambiar de modo y actualizar tiempos antes de evaluar el auto-start
+  let nextMode = 'pomodoro';
+  if (currentMode === 'pomodoro') {
+    if (pomodoroCount >= config.longBreakInterval) {
+      nextMode = 'longBreak';
+    } else {
+      nextMode = 'shortBreak';
+    }
+  } else if (currentMode === 'shortBreak') {
+    pomodoroCount++;
+    nextMode = 'pomodoro';
+  } else if (currentMode === 'longBreak') {
+    pomodoroCount = 1;
+    nextMode = 'pomodoro';
+  }
+
+  // Cambiamos al siguiente modo inmediatamente
   switchMode(nextMode);
 
-  // Auto Start Breaks / Pomodoros evaluado correctamente
-  if ((nextMode.includes('Break') && config.autoBreaks) || (nextMode === 'pomodoro' && config.autoPomos)) {
-    startTimer();
+  // Evaluamos si debe iniciar automáticamente según las opciones (Auto Start Breaks / Auto Start Pomodoros)
+  const shouldAutoStart = (nextMode.includes('Break') && config.autoBreaks) || 
+                          (nextMode === 'pomodoro' && config.autoPomos);
+
+  if (shouldAutoStart) {
+    isTransitioning = true;
+    let countdownSecs = 10;
+    
+    // Mostramos aviso visual inicial de los 10 segundos
+    counterDisplay.textContent = `Iniciando en ${countdownSecs}s...`;
+
+    const transitionInterval = setInterval(() => {
+      countdownSecs--;
+      if (countdownSecs > 0) {
+        counterDisplay.textContent = `Iniciando en ${countdownSecs}s...`;
+      } else {
+        clearInterval(transitionInterval);
+        // Verificamos que el usuario no haya interactuado manualmente durante la espera
+        if (isTransitioning) {
+          updateCounterDisplay(); // Restaura el texto normal del contador
+          startTimer();
+        }
+      }
+    }, 1000);
   }
 }
 
+// Función auxiliar para sumar el avance a la tarea que esté seleccionada
 function addCompletedPomoToActiveTask() {
   let found = ungroupedTasks.find(t => t.text === selectedTaskFullTitle);
   if (found) {
@@ -130,16 +163,20 @@ function addCompletedPomoToActiveTask() {
 }
 
 function resetTimer() {
+  isTransitioning = false;
   pauseTimer();
   timeLeft = config[currentMode] * 60;
   updateTimerDisplay();
+  updateCounterDisplay();
 }
 
 function skipPhase() {
+  isTransitioning = false;
   onTimerComplete();
 }
 
 function switchMode(mode) {
+  isTransitioning = false;
   pauseTimer();
   currentMode = mode;
   updateTheme();
@@ -169,7 +206,11 @@ if (openSettingsBtn) {
     document.getElementById('picker-pomo').value = config.colorPomodoro;
     document.getElementById('picker-short').value = config.colorShort;
     document.getElementById('picker-long').value = config.colorLong;
-    document.getElementById('input-gif').value = config.gifUrl;
+    
+    const newGif = document.getElementById('input-gif').value;
+    if(newGif) {
+      document.getElementById('input-gif').value = config.gifUrl;
+    }
 
     document.getElementById('input-reminder-type').value = config.reminderType;
     document.getElementById('input-reminder-min').value = config.reminderMin;
@@ -201,7 +242,7 @@ function saveSettings() {
   config.colorPomodoro = document.getElementById('picker-pomo').value;
   config.colorShort = document.getElementById('picker-short').value;
   config.colorLong = document.getElementById('picker-long').value;
-  
+
   const newGif = document.getElementById('input-gif').value;
   if(newGif && gifDisplay) {
     config.gifUrl = newGif;
@@ -217,7 +258,7 @@ function saveSettings() {
   if (typeof saveData === 'function') saveData();
 }
 
-// Inicialización
+// Inicialización de la aplicación
 applyColors();
 updateTimerDisplay();
 if (typeof renderGroups === 'function') {
