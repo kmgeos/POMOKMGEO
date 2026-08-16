@@ -130,7 +130,7 @@ function onTimerComplete() {
 
   if (shouldAutoStart) {
     isTransitioning = true;
-    let countdownSecs = 10;
+    let countdownSecs = 5; // <--- AQUÍ PUEDES CAMBIAR EL TIEMPO (ej. 5 o 15)
     
     // Mostramos aviso visual inicial de los 10 segundos
     counterDisplay.textContent = `Iniciando en ${countdownSecs}s...`;
