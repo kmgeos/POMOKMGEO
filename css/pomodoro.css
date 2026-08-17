@@ -1,232 +1,308 @@
-:root {
-  --bg-main: #a8cca0;
-  --card-bg: #8fb383;
-  --panel-bg: #9ec191;
-  --accent-dark: #3b5231;
-  --text-main: #2f4427;
-  --text-light: #ffffff;
+:root { 
+  --color-pomodoro: #ba4949;    
+  --color-shortBreak: #38858a;    
+  --color-longBreak: #397097;      
+      
+  --bg-color: var(--color-pomodoro); 
+  --card-bg: rgba(255, 255, 255, 0.15); 
+  --text-color: #ffffff; 
+  --btn-bg: #ffffff; 
+  --btn-text: var(--color-pomodoro); 
 }
 
-body.mode-pomodoro { background-color: var(--bg-main); }
-body.mode-shortBreak { background-color: #9cbda2; }
-body.mode-longBreak { background-color: #8dae9e; }
+body.mode-pomodoro { --bg-color: var(--color-pomodoro); --btn-text: var(--color-pomodoro); } 
+body.mode-shortBreak { --bg-color: var(--color-shortBreak); --btn-text: var(--color-shortBreak); } 
+body.mode-longBreak { --bg-color: var(--color-longBreak); --btn-text: var(--color-longBreak); }
 
-* {
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
+body.running-dark { 
+  --bg-color: #000000 !important; 
+  --card-bg: #1e1e1e !important; 
+  --btn-text: #000000 !important; 
 }
 
-body {
-  background-color: var(--bg-main) !important;
-  color: var(--text-main);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
+* { 
+  box-sizing: border-box; 
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+  margin: 0; 
+  padding: 0; 
 }
 
-/* Contenedor General estilo Ventana App */
-.app-container {
-  width: 100%;
-  max-width: 900px;
-  background: #cbe3c3 !important;
-  border-radius: 24px;
-  padding: 30px;
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 25px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  border: 4px solid #a4c99b;
+body { 
+  background-color: var(--bg-color); 
+  color: var(--text-color); 
+  display: flex; 
+  justify-content: center; 
+  padding: 40px 20px; 
+  min-height: 100vh; 
+  transition: background-color 0.4s ease; 
 }
 
-@media (max-width: 768px) {
-  .app-container { grid-template-columns: 1fr; }
+.app-container { 
+  width: 100%; 
+  max-width: 900px; 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 30px; 
 }
 
-/* Tarjetas principales */
-.card {
-  background: var(--card-bg) !important;
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3), 0 4px 10px rgba(0,0,0,0.05);
+@media (max-width: 768px) { 
+  .app-container { grid-template-columns: 1fr; } 
 }
 
-/* Sección del Reloj (Izquierda) */
-.timer-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.card { 
+  background: var(--card-bg); 
+  border-radius: 12px; 
+  padding: 25px; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+  backdrop-filter: blur(5px); 
 }
 
-/* Botones de modo */
-.mode-buttons {
-  display: flex;
-  background: rgba(47, 68, 39, 0.15);
-  padding: 5px;
-  border-radius: 30px;
-  gap: 5px;
-  margin-bottom: 20px;
+.timer-section { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-align: center; 
+} 
+
+.top-bar { 
+  width: 100%; 
+  display: flex; 
+  justify-content: flex-end; 
+  margin-bottom: 15px; 
+} 
+
+.icon-btn { 
+  background: rgba(255,255,255,0.2); 
+  border: none; 
+  color: white; 
+  padding: 8px 14px; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  font-weight: bold; 
+} 
+
+.mode-buttons { 
+  display: flex; 
+  gap: 10px; 
+  margin-bottom: 20px; 
+} 
+
+.mode-btn { 
+  background: transparent; 
+  border: none; 
+  color: white; 
+  padding: 6px 12px; 
+  border-radius: 4px; 
+  cursor: pointer; 
+  font-weight: bold; 
+  opacity: 0.8; 
+} 
+
+.mode-btn.active { 
+  background: rgba(0,0,0,0.2); 
+  opacity: 1; 
 }
 
-.mode-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  opacity: 0.75;
-  transition: all 0.2s ease;
+.gif-container { 
+  width: 150px; 
+  height: 150px; 
+  border-radius: 8px; 
+  overflow: hidden; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  margin-bottom: 15px; 
+} 
+
+#gif-display { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
 }
 
-.mode-btn.active {
-  background: var(--accent-dark) !important;
-  color: var(--text-light) !important;
-  opacity: 1;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+.task-title-display { 
+  font-size: 1.1rem; 
+  font-weight: bold; 
+  letter-spacing: 1px; 
+  text-transform: uppercase; 
+  margin-bottom: 6px; 
+  opacity: 0.95; 
+} 
+
+.pomodoro-counter { 
+  display: inline-flex; 
+  background: rgba(0,0,0,0.2); 
+  border: 1px solid rgba(255,255,255,0.3); 
+  border-radius: 50px; 
+  padding: 4px 14px; 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+  margin-bottom: 15px; 
+} 
+
+.timer-display { 
+  font-size: 5rem; 
+  font-weight: bold; 
+  margin-bottom: 20px; 
+  line-height: 1; 
+} 
+
+.controls-row { 
+  display: flex; 
+  align-items: center; 
+  gap: 15px; 
+} 
+
+.main-btn { 
+  background: var(--btn-bg); 
+  color: var(--btn-text); 
+  border: none; 
+  padding: 12px 35px; 
+  font-size: 1.3rem; 
+  font-weight: bold; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  min-width: 140px; 
+} 
+
+.secondary-btn { 
+  background: rgba(255,255,255,0.2); 
+  border: none; 
+  color: white; 
+  width: 48px; 
+  height: 48px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  font-size: 1.2rem; 
 }
 
-/* Reloj Digital */
-.timer-display {
-  font-size: 5rem;
-  font-weight: 800;
-  color: #2b3e23;
-  letter-spacing: -2px;
-  margin-bottom: 15px;
-  line-height: 1;
+.tasks-section h2 { 
+  margin-bottom: 15px; 
+  border-bottom: 2px solid rgba(255,255,255,0.2); 
+  padding-bottom: 8px; 
 }
 
-/* Controles de Botones */
-.controls-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
+.action-buttons-row { 
+  display: flex; 
+  margin-bottom: 15px; 
+} 
+
+.action-buttons-row.single-btn-layout .action-pill-btn { 
+  width: 100%; 
 }
 
-.main-btn {
-  background: var(--accent-dark) !important;
-  color: var(--text-light) !important;
-  border: none;
-  padding: 10px 24px;
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-.secondary-btn {
-  background: rgba(255, 255, 255, 0.7) !important;
-  border: none;
-  color: #2b3e23 !important;
-  padding: 10px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-
-/* Etiquetas inferiores */
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 10px;
-  margin-bottom: 18px;
-}
-
-.info-label {
-  display: block;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  font-weight: 700;
-  opacity: 0.65;
-  margin-bottom: 2px;
-}
-
-.pomodoro-counter, .task-title-display {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #2b3e23;
-}
-
-/* Contenedor de la ilustración */
-.gif-container {
-  width: 100%;
-  max-width: 250px;
-  height: 135px;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #d4e7cc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#gif-display {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Sección Tareas (Derecha) */
-.tasks-section {
-  background: var(--panel-bg) !important;
-  display: flex;
-  flex-direction: column;
-}
-
-.tasks-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  background: var(--accent-dark);
-  padding: 12px 18px;
-  border-radius: 14px;
-  color: var(--text-light);
-}
-
-.tasks-header h2 {
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-
-.add-task-btn {
+.action-pill-btn {
   background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   color: white;
-  border: none;
-  padding: 6px 12px;
+  padding: 10px;
   border-radius: 8px;
   font-weight: bold;
-  font-size: 0.85rem;
   cursor: pointer;
+  transition: background 0.2s;
+  text-align: center;
 }
 
-/* OCULTAR EL MODAL DE SETTINGS POR DEFECTO PARA QUE NO ESTORBE */
-#modal-settings {
-  display: none !important;
+.action-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Estilos de la Modal de Configuración (Settings) */
+.modal-overlay {
+  display: none;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #d4e8cc !important;
-  color: #2b3e23 !important;
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
-  width: 90%;
-  max-width: 420px;
 }
 
-#modal-settings.active {
-  display: block !important;
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-card {
+  background: #ffffff;
+  color: #333333;
+  width: 90%;
+  max-width: 450px;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.close-btn {
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+.section-title {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #777;
+  margin: 15px 0 8px 0;
+  letter-spacing: 0.5px;
+}
+
+.setting-group {
+  margin-bottom: 12px;
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.time-inputs {
+  display: flex;
+  gap: 10px;
+}
+
+.time-field {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  flex: 1;
+}
+
+.time-field input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.modal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.save-btn {
+  background: #38858a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
 }
