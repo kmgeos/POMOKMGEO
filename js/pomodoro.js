@@ -1,63 +1,75 @@
 let currentMode = 'pomodoro'; 
 let timeLeft = config.pomodoro * 60;
 let timerInterval = null;
+let transitionInterval = null;
 let isRunning = false;
 let pomodoroCount = 1;
-let isTransitioning = false; // Bandera para controlar la pausa de transición
+let isTransitioning = false;
 
 const timerDisplay = document.getElementById('timer-display');
 const startBtn = document.getElementById('start-btn');
-const gifDisplay = document.getElementById('gif-display');
-const modal = document.getElementById('modal-settings');
 const counterDisplay = document.getElementById('pomodoro-counter');
-const taskTitleDisplay = document.getElementById('task-title-display');
-
-function applyColors() {
-  document.documentElement.style.setProperty('--color-pomodoro', config.colorPomodoro);
-  document.documentElement.style.setProperty('--color-shortBreak', config.colorShort);
-  document.documentElement.style.setProperty('--color-longBreak', config.colorLong);
-}
+const popover = document.getElementById('settings-popover');
 
 function updateTimerDisplay() {
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
-  timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  if (timerDisplay) {
+    timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
 }
 
+/* INCISO 3: Descripción Clara en Intervalos de Descanso */
 function updateCounterDisplay() {
+  if (!counterDisplay) return;
+  // Si estamos en la pausa de 5 segundos, no sobrescribir la cuenta regresiva
+  if (isTransitioning) return;
+
   if (currentMode === 'longBreak') {
     counterDisplay.textContent = "Descanso Largo";
   } else if (currentMode === 'shortBreak') {
-    counterDisplay.textContent = `Descanso Corto (${pomodoroCount} / ${config.longBreakInterval})`;
+    const totalShortBreaks = config.longBreakInterval - 1;
+    counterDisplay.textContent = `Descanso Corto (${pomodoroCount} / ${totalShortBreaks})`;
   } else {
     counterDisplay.textContent = `Pomodoro #${pomodoroCount} / ${config.longBreakInterval}`;
   }
 }
 
-function updateTaskTitle() {
-  if (taskTitleDisplay) {
-    taskTitleDisplay.textContent = selectedTaskFullTitle ? selectedTaskFullTitle.toUpperCase() : "SIN TAREA SELECCIONADA";
-  }
-}
-
+/* INCISO 2: Control de Tema y Modo Oscuro al Correr */
 function updateTheme() {
-  document.body.className = `mode-${currentMode}`;
+  // Sincronizar clase de modo general
+  document.body.dataset.mode = currentMode;
+
+  // Si está corriendo y la opción de modo oscuro al activar está activa
   if (isRunning && config.darkModeRunning) {
-    document.body.classList.add('running-dark');
+    document.body.classList.add('dark-theme');
+  } else if (!config.darkModeAlways) {
+    // Si no hay un modo oscuro global permanente, remover al pausar/detener
+    document.body.classList.remove('dark-theme');
   }
-  document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+
+  // Actualizar estado visual de pestañas
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`btn-${currentMode}`);
   if (activeBtn) activeBtn.classList.add('active');
 }
 
 function toggleTimer() {
-  if (isTransitioning) return; // Evita interferir durante la pausa de transición
-
-  // Reproducir sonido al hacer clic en Start / Pause
+  // Reproducir siempre gatcha.mp3 al pulsar el botón Iniciar / Pausa
   const clickSound = document.getElementById('click-audio');
-  if (clickSound) {
+  if (clickSound) { 
+    clickSound.src = 'assets/gatcha.mp3';
     clickSound.currentTime = 0; 
-    clickSound.play();
+    clickSound.play().catch(e => console.log("Error al reproducir gatcha.mp3:", e)); 
+  }
+
+  // Si estamos en la pausa de 5 segundos y el usuario pulsa START, inicia inmediatamente
+  if (isTransitioning) {
+    clearInterval(transitionInterval);
+    isTransitioning = false;
+    updateCounterDisplay();
+    startTimer();
+    return;
   }
 
   if (isRunning) {
@@ -68,17 +80,33 @@ function toggleTimer() {
 }
 
 function startTimer() {
+  clearInterval(transitionInterval);
+  clearInterval(timerInterval);
   isTransitioning = false;
   isRunning = true;
-  startBtn.textContent = "PAUSE";
+
+  if (startBtn) startBtn.textContent = "PAUSA";
+  
+  // Activar modo oscuro si está configurado para ejecutarse mientras corre
   if (config.darkModeRunning) {
-    document.body.classList.add('running-dark');
+    document.body.classList.add('dark-theme');
   }
+
   timerInterval = setInterval(() => {
     if (timeLeft > 0) {
       timeLeft--;
       updateTimerDisplay();
+
+      // Recordatorio antes de finalizar
+      if (config.reminderEnabled && timeLeft === config.reminderMin * 60) {
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("¡Atención!", {
+            body: `Te quedan ${config.reminderMin} min para finalizar el ${getModeLabel(currentMode)}.`
+          });
+        }
+      }
     } else {
+      clearInterval(timerInterval);
       onTimerComplete();
     }
   }, 1000);
@@ -86,117 +114,101 @@ function startTimer() {
 
 function pauseTimer() {
   clearInterval(timerInterval);
+  clearInterval(transitionInterval);
   isRunning = false;
-  startBtn.textContent = "START";
-  document.body.classList.remove('running-dark');
+  isTransitioning = false;
+  if (startBtn) startBtn.textContent = "INICIAR";
+  
+  // Desactivar modo oscuro al pausar si dependía del temporizador
+  if (config.darkModeRunning && !config.darkModeAlways) {
+    document.body.classList.remove('dark-theme');
+  }
 }
 
 function onTimerComplete() {
-  pauseTimer();
+  clearInterval(timerInterval);
+  isRunning = false;
 
-  // Reproducir sonido de alarma al terminar el tiempo
+  if (config.darkModeRunning && !config.darkModeAlways) {
+    document.body.classList.remove('dark-theme');
+  }
+
+  // Reproducir la Alarma seleccionada en la configuración
   const alarmSound = document.getElementById('alarm-audio');
   if (alarmSound) {
+    alarmSound.src = `assets/${config.alarmSound}`;
     alarmSound.currentTime = 0;
-    alarmSound.play();
+    alarmSound.play().catch(e => console.log("Error al reproducir la alarma:", e));
   }
 
-  // Lanzar notificación en pantalla si está permitido
+  // Notificación del sistema
   if ("Notification" in window && Notification.permission === "granted") {
     if (currentMode === 'pomodoro') {
-      new Notification("¡Pomodoro Finalizado! ⏱️", {
-        body: "Es hora de tomar un descanso."
-      });
+      new Notification("¡Pomodoro Finalizado! ⏱️", { body: "Tómate un descanso bien merecido." });
     } else {
-      new Notification("¡Descanso Terminado! 🚀", {
-        body: "Es hora de volver a concentrarse."
-      });
+      new Notification("¡Descanso Finalizado! 🚀", { body: "Hora de volver a concentrarse." });
     }
   }
 
-  // Si estábamos en modo pomodoro, sumamos +1 pomodoro completado a la tarea activa si existe
-  if (currentMode === 'pomodoro' && selectedTaskFullTitle) {
-    addCompletedPomoToActiveTask();
-  }
-
+  // Calcular siguiente modo de trabajo o descanso
   let nextMode = 'pomodoro';
   if (currentMode === 'pomodoro') {
-    if (pomodoroCount >= config.longBreakInterval) {
-      nextMode = 'longBreak';
-    } else {
-      nextMode = 'shortBreak';
-    }
+    nextMode = (pomodoroCount >= config.longBreakInterval) ? 'longBreak' : 'shortBreak';
   } else if (currentMode === 'shortBreak') {
     pomodoroCount++;
     nextMode = 'pomodoro';
-  } else if (currentMode === 'longBreak') {
+  } else {
     pomodoroCount = 1;
     nextMode = 'pomodoro';
   }
 
-  // Cambiamos al siguiente modo inmediatamente
-  switchMode(nextMode);
+  // Transición de modo
+  currentMode = nextMode;
+  updateTheme();
+  timeLeft = config[nextMode] * 60;
+  updateTimerDisplay();
 
-  // Evaluamos si debe iniciar automáticamente según las opciones
+  // Verificar si aplica el Auto Start
   const shouldAutoStart = (nextMode.includes('Break') && config.autoBreaks) || 
                           (nextMode === 'pomodoro' && config.autoPomos);
 
   if (shouldAutoStart) {
-    isTransitioning = true;
-    let countdownSecs = 5; // <--- Aquí cambias los segundos de espera (puedes ajustarlo a 5, 10, etc.)
-    
-    counterDisplay.textContent = `Iniciando en ${countdownSecs}s...`;
-
-    const transitionInterval = setInterval(() => {
-      countdownSecs--;
-      if (countdownSecs > 0) {
-        counterDisplay.textContent = `Iniciando en ${countdownSecs}s...`;
-      } else {
-        clearInterval(transitionInterval);
-        if (isTransitioning) {
-          updateCounterDisplay(); 
-          startTimer();
-        }
-      }
-    }, 1000);
-  }
-}
-
-// Función auxiliar para solicitar permisos de notificación del navegador
-function requestNotificationPermission() {
-  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-    Notification.requestPermission();
-  }
-}
-
-// Función auxiliar para sumar el avance a la tarea que esté seleccionada
-function addCompletedPomoToActiveTask() {
-  let found = ungroupedTasks.find(t => t.text === selectedTaskFullTitle);
-  if (found) {
-    found.completedPomos = (found.completedPomos || 0) + 1;
-    if (config.autoCheck && found.completedPomos >= found.estPomos) {
-      found.completed = true;
-    }
+    startAutoStartCountdown();
   } else {
-    groups.forEach(g => {
-      g.tasks.forEach(t => {
-        const full = `${g.name} - ${t.text}`;
-        if (full === selectedTaskFullTitle) {
-          t.completedPomos = (t.completedPomos || 0) + 1;
-          if (config.autoCheck && t.completedPomos >= t.estPomos) {
-            t.completed = true;
-          }
-        }
-      });
-    });
+    if (startBtn) startBtn.textContent = "INICIAR";
+    updateCounterDisplay();
   }
-  if (typeof renderGroups === 'function') {
-    renderGroups();
+}
+
+// Cuenta regresiva suave de 5 segundos para automáticos
+function startAutoStartCountdown() {
+  clearInterval(transitionInterval);
+  isTransitioning = true;
+  let secondsRemaining = 5;
+
+  if (counterDisplay) {
+    counterDisplay.textContent = `Siguiente intervalo inicia en ${secondsRemaining}s...`;
   }
+  if (startBtn) {
+    startBtn.textContent = "INICIAR YA";
+  }
+
+  transitionInterval = setInterval(() => {
+    secondsRemaining--;
+    if (secondsRemaining > 0) {
+      if (counterDisplay) {
+        counterDisplay.textContent = `Siguiente intervalo inicia en ${secondsRemaining}s...`;
+      }
+    } else {
+      clearInterval(transitionInterval);
+      isTransitioning = false;
+      updateCounterDisplay();
+      startTimer();
+    }
+  }, 1000);
 }
 
 function resetTimer() {
-  isTransitioning = false;
   pauseTimer();
   timeLeft = config[currentMode] * 60;
   updateTimerDisplay();
@@ -204,12 +216,11 @@ function resetTimer() {
 }
 
 function skipPhase() {
-  isTransitioning = false;
+  pauseTimer();
   onTimerComplete();
 }
 
 function switchMode(mode) {
-  isTransitioning = false;
   pauseTimer();
   currentMode = mode;
   updateTheme();
@@ -218,84 +229,108 @@ function switchMode(mode) {
   updateCounterDisplay();
 }
 
-const openSettingsBtn = document.getElementById('open-settings');
-if (openSettingsBtn) {
-  openSettingsBtn.onclick = () => {
-    document.getElementById('input-pomo').value = config.pomodoro;
-    document.getElementById('input-short').value = config.shortBreak;
-    document.getElementById('input-long').value = config.longBreak;
-    document.getElementById('input-interval').value = config.longBreakInterval;
-    
-    document.getElementById('input-auto-breaks').checked = config.autoBreaks;
-    document.getElementById('input-auto-pomos').checked = config.autoPomos;
-    document.getElementById('input-auto-check').checked = config.autoCheck;
-    document.getElementById('input-check-bottom').checked = config.checkBottom;
-    
-    document.getElementById('input-alarm-sound').value = config.alarmSound;
-    document.getElementById('input-alarm-vol').value = config.alarmVol;
-    document.getElementById('input-alarm-repeat').value = config.alarmRepeat;
-
-    document.getElementById('input-dark-running').checked = config.darkModeRunning;
-    document.getElementById('picker-pomo').value = config.colorPomodoro;
-    document.getElementById('picker-short').value = config.colorShort;
-    document.getElementById('picker-long').value = config.colorLong;
-    
-    const newGif = document.getElementById('input-gif').value;
-    if(newGif) {
-      document.getElementById('input-gif').value = config.gifUrl;
-    }
-
-    document.getElementById('input-reminder-type').value = config.reminderType;
-    document.getElementById('input-reminder-min').value = config.reminderMin;
-
-    modal.classList.add('active');
-  };
+function getModeLabel(mode) {
+  switch (mode) {
+    case 'pomodoro': return 'Pomodoro';
+    case 'shortBreak': return 'Descanso Corto';
+    case 'longBreak': return 'Descanso Largo';
+    default: return 'Intervalo';
+  }
 }
 
-function closeSettings() { 
-  modal.classList.remove('active'); 
+/* FUNCIONES DE CONFIGURACIÓN */
+function changeTimeInput(inputId, delta) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  let val = parseInt(input.value) || 0;
+  val = Math.max(1, val + delta);
+  input.value = val;
+  saveCurrentSettings();
 }
 
-function saveSettings() {
-  config.pomodoro = parseInt(document.getElementById('input-pomo').value) || 25;
-  config.shortBreak = parseInt(document.getElementById('input-short').value) || 5;
-  config.longBreak = parseInt(document.getElementById('input-long').value) || 15;
-  config.longBreakInterval = parseInt(document.getElementById('input-interval').value) || 4;
-  
-  config.autoBreaks = document.getElementById('input-auto-breaks').checked;
-  config.autoPomos = document.getElementById('input-auto-pomos').checked;
-  config.autoCheck = document.getElementById('input-auto-check').checked;
-  config.checkBottom = document.getElementById('input-check-bottom').checked;
-  
-  config.alarmSound = document.getElementById('input-alarm-sound').value;
-  config.alarmVol = parseInt(document.getElementById('input-alarm-vol').value) || 50;
-  config.alarmRepeat = parseInt(document.getElementById('input-alarm-repeat').value) || 1;
+function previewAlarmSound(filename) {
+  const alarmSound = document.getElementById('alarm-audio');
+  if (alarmSound) {
+    alarmSound.src = `assets/${filename}`;
+    alarmSound.currentTime = 0;
+    alarmSound.play().catch(e => console.log("Error al previsualizar:", e));
+  }
+  saveCurrentSettings();
+}
 
-  config.darkModeRunning = document.getElementById('input-dark-running').checked;
-  config.colorPomodoro = document.getElementById('picker-pomo').value;
-  config.colorShort = document.getElementById('picker-short').value;
-  config.colorLong = document.getElementById('picker-long').value;
+function loadSettingsToUI() {
+  if (document.getElementById('input-pomo')) document.getElementById('input-pomo').value = config.pomodoro;
+  if (document.getElementById('input-short')) document.getElementById('input-short').value = config.shortBreak;
+  if (document.getElementById('input-long')) document.getElementById('input-long').value = config.longBreak;
+  if (document.getElementById('input-interval')) document.getElementById('input-interval').value = config.longBreakInterval;
+  if (document.getElementById('input-auto-breaks')) document.getElementById('input-auto-breaks').checked = config.autoBreaks;
+  if (document.getElementById('input-auto-pomos')) document.getElementById('input-auto-pomos').checked = config.autoPomos;
+  if (document.getElementById('input-reminder')) document.getElementById('input-reminder').checked = config.reminderEnabled;
+  if (document.getElementById('input-reminder-min')) document.getElementById('input-reminder-min').value = config.reminderMin;
+  if (document.getElementById('input-alarm-sound')) document.getElementById('input-alarm-sound').value = config.alarmSound;
+  if (document.getElementById('input-dark-running')) document.getElementById('input-dark-running').checked = config.darkModeRunning;
+}
 
-  const newGif = document.getElementById('input-gif').value;
-  if(newGif && gifDisplay) {
-    config.gifUrl = newGif;
-    gifDisplay.src = config.gifUrl;
+function saveCurrentSettings() {
+  config.pomodoro = parseInt(document.getElementById('input-pomo')?.value) || 25;
+  config.shortBreak = parseInt(document.getElementById('input-short')?.value) || 5;
+  config.longBreak = parseInt(document.getElementById('input-long')?.value) || 15;
+  config.longBreakInterval = parseInt(document.getElementById('input-interval')?.value) || 4;
+  config.autoBreaks = document.getElementById('input-auto-breaks')?.checked ?? false;
+  config.autoPomos = document.getElementById('input-auto-pomos')?.checked ?? false;
+  config.reminderEnabled = document.getElementById('input-reminder')?.checked ?? false;
+  config.reminderMin = parseInt(document.getElementById('input-reminder-min')?.value) || 1;
+  config.alarmSound = document.getElementById('input-alarm-sound')?.value || 'alarm_clock.mp3';
+  config.darkModeRunning = document.getElementById('input-dark-running')?.checked ?? false;
+
+  if (!isRunning && !isTransitioning) {
+    timeLeft = config[currentMode] * 60;
+    updateTimerDisplay();
+  }
+  updateCounterDisplay();
+
+  // Guardar en localStorage a través de data.js
+  if (typeof saveData === 'function') {
+    saveData();
+  }
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+  const btnPomo = document.getElementById('btn-pomodoro');
+  const btnShort = document.getElementById('btn-shortBreak');
+  const btnLong = document.getElementById('btn-longBreak');
+
+  if (btnPomo) btnPomo.addEventListener('click', () => switchMode('pomodoro'));
+  if (btnShort) btnShort.addEventListener('click', () => switchMode('shortBreak'));
+  if (btnLong) btnLong.addEventListener('click', () => switchMode('longBreak'));
+
+  if (startBtn) startBtn.addEventListener('click', toggleTimer);
+
+  document.getElementById('btn-restart')?.addEventListener('click', resetTimer);
+  document.getElementById('btn-skip')?.addEventListener('click', skipPhase);
+
+  const openSettingsBtn = document.getElementById('open-settings');
+  if (openSettingsBtn && popover) {
+    openSettingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      loadSettingsToUI();
+      popover.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!popover.contains(e.target) && e.target !== openSettingsBtn) {
+        popover.classList.remove('active');
+      }
+    });
   }
 
-  config.reminderType = document.getElementById('input-reminder-type').value;
-  config.reminderMin = parseInt(document.getElementById('input-reminder-min').value) || 0;
+  document.querySelectorAll('#settings-popover input, #settings-popover select').forEach(elem => {
+    elem.addEventListener('change', saveCurrentSettings);
+  });
 
-  applyColors();
-  closeSettings();
-  switchMode(currentMode);
-  if (typeof saveData === 'function') saveData();
-}
-
-// Inicialización de la aplicación
-applyColors();
-updateTimerDisplay();
-if (typeof renderGroups === 'function') {
-  renderGroups();
-}
-updateCounterDisplay();
-requestNotificationPermission();
+  loadSettingsToUI();
+  updateTheme();
+  updateTimerDisplay();
+  updateCounterDisplay();
+});
