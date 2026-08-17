@@ -1,3 +1,6 @@
+// js/data.js
+
+// Carga inicial desde localStorage con valores por defecto
 let groups = JSON.parse(localStorage.getItem('pomodoro_groups')) || [];
 let ungroupedTasks = JSON.parse(localStorage.getItem('ungrouped_tasks')) || [];
 
@@ -10,20 +13,21 @@ let config = JSON.parse(localStorage.getItem('pomodoro_config')) || {
   autoPomos: false,
   autoCheck: false,
   checkBottom: true,
-  alarmSound: "kitchen",
+  alarmSound: "alarm.mp3",     // Se mantiene con extensión para assets/
   alarmVol: 50,
   alarmRepeat: 1,
-  darkModeRunning: true,
-  colorPomodoro: "#6b4c9a",
-  colorShort: "#2d8883",
-  colorLong: "#397097",
-  gifUrl: "https://i.gifer.com/XOsX.gif",
-  reminderType: "last",
-  reminderMin: 0
+  darkModeRunning: false,
+  reminderEnabled: false,      // Requerido por el temporizador principal
+  reminderMin: 1,
+  colorPomodoro: "#9bb979",
+  colorShort: "#82a862",
+  colorLong: "#6a934a",
+  gifUrl: "https://i.gifer.com/XOsX.gif"
 };
 
+// Función global para guardar cualquier cambio
 function saveData() {
-    localStorage.setItem('pomodoro_groups', JSON.stringify(groups));
-    localStorage.setItem('ungrouped_tasks', JSON.stringify(ungroupedTasks));
-    localStorage.setItem('pomodoro_config', JSON.stringify(config));
+  localStorage.setItem('pomodoro_groups', JSON.stringify(groups));
+  localStorage.setItem('ungrouped_tasks', JSON.stringify(ungroupedTasks));
+  localStorage.setItem('pomodoro_config', JSON.stringify(config));
 }
