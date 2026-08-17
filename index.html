@@ -3,260 +3,268 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pomodoro Custom Theme</title>
+  <title>Cozy Pomodoro & Tasks</title>
+
+  <!-- Fuentes e Iconos -->
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- CSS externo -->
   <link rel="stylesheet" href="css/pomodoro.css">
-  <audio id="alarm-audio" src="assets/perepere.mp3" preload="auto"></audio>
-<audio id="click-audio" src="assets/gatcha.mp3" preload="auto"></audio>
 </head>
-<body class="mode-pomodoro">
+<body>
 
-<div class="app-container">
-  
-  <!-- SECCIÓN TEMPORIZADOR -->
-  <div class="card timer-section">
-    <div class="top-bar">
-      <button class="icon-btn" id="open-settings">⚙ Setting</button>
+  <!-- Audios dinámicos de assets -->
+  <audio id="click-audio" src="assets/click.mp3" preload="auto"></audio>
+  <audio id="alarm-audio" src="assets/alarm.mp3" preload="auto"></audio>
+
+  <!-- VENTANA PRINCIPAL -->
+  <div class="app-window">
+
+    <!-- Header / Botones Mac -->
+    <div class="window-header">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
     </div>
 
-    <div class="mode-buttons">
-      <button class="mode-btn active" id="btn-pomodoro" onclick="switchMode('pomodoro')">Pomodoro</button>
-      <button class="mode-btn" id="btn-shortBreak" onclick="switchMode('shortBreak')">Short Break</button>
-      <button class="mode-btn" id="btn-longBreak" onclick="switchMode('longBreak')">Long Break</button>
-    </div>
-
-    <div class="gif-container">
-      <img id="gif-display" class="gif-display" src="https://cdn.sanity.io/images/do2rqv0h/production/3356021b2d743e60cb89b0b97196fb2b2b0b44a0-800x800.gif?w=1116&fit=max&auto=format" alt="GIF Pomodoro">
-    </div>
-
-    <div class="task-title-display" id="task-title-display">
-      SIN TAREA SELECCIONADA
-    </div>
-
-    <div class="pomodoro-counter" id="pomodoro-counter">
-      Pomodoro #1 / 4
-    </div>
-
-    <div class="timer-display" id="timer-display">25:00</div>
-
-    <div class="controls-row">
-      <button class="secondary-btn" onclick="resetTimer()" title="Reiniciar">↺</button>
-      <button class="main-btn" id="start-btn" onclick="toggleTimer()">START</button>
-      <button class="secondary-btn" onclick="skipPhase()" title="Saltar">⏭</button>
-    </div>
-  </div>
-
-  <!-- SECCIÓN DE MATERIAS Y TAREAS -->
-  <div class="card tasks-section">
-    <h2>Tasks</h2>
-
-    <!-- BOTÓN PRINCIPAL ÚNICO -->
-    <div class="action-buttons-row single-btn-layout">
-      <button class="action-pill-btn" onclick="openAddForm()">+ Tarea</button>
-    </div>
-
-    <!-- DESPLEGABLE DINÁMICO (ESTILO POMOFOCUS) -->
-    <div class="dropdown-form-card" id="dropdown-form-card" style="display: none;">
+    <div class="app-body">
       
-      <div id="form-task-content">
-        <input type="text" id="input-task-name" class="input-main-field" placeholder="What are you working on?">
-        
-        <div class="section-label-small">Est Pomodoros</div>
-        <div class="pomo-stepper-row">
-          <input type="text" id="input-task-pomo" value="1" class="pomo-number-input" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-          <div class="stepper-arrows">
-            <button type="button" onclick="adjustPomo(1)">▲</button>
-            <button type="button" onclick="adjustPomo(-1)">▼</button>
-          </div>
+      <!-- SECCIÓN POMODORO -->
+      <div class="pomodoro-card">
+
+        <!-- Pestañas de Modos -->
+        <div class="pomo-tabs">
+          <button class="tab-btn active" id="btn-pomodoro">Pomodoro</button>
+          <button class="tab-btn" id="btn-shortBreak">Short Break</button>
+          <button class="tab-btn" id="btn-longBreak">Long Break</button>
         </div>
 
-        <!-- OPCIÓN SECUNDARIA -->
-        <div class="form-links-row">
-          <span onclick="toggleGroupSection()" id="link-group-label" style="cursor: pointer;">+ Vincular a grupo</span>
-        </div>
+        <!-- Reloj -->
+        <div class="timer-display" id="timer-display">25:00</div>
 
-        <!-- Sección de Grupo Oculta -->
-        <div id="group-section-container" style="display: none; margin-bottom: 12px; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #e1e1e1;">
-          <div style="font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px;">Grupo de la Tarea:</div>
+        <!-- Botones de Control -->
+        <div class="controls-row">
+          <button class="btn-pill" id="btn-restart">
+            <i data-lucide="rotate-ccw" size="18"></i> Restart
+          </button>
           
-          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <select id="select-task-group" class="dropdown-select-field" style="flex: 1;" onchange="onGroupSelectChange(this.value)">
-              <!-- Se llena dinámicamente -->
-            </select>
-            <button type="button" class="btn-save-dark" style="padding: 4px 10px; font-size: 0.8rem;" onclick="toggleNewGroupInput()">+ Nuevo</button>
+          <button class="btn-play-pause" id="start-btn">
+            START
+          </button>
+
+          <button class="btn-pill" id="btn-skip">
+            Skip
+          </button>
+
+          <button class="btn-settings" id="open-settings">
+            <i data-lucide="settings" size="20"></i>
+          </button>
+        </div>
+
+        <!-- POPOVER / PANEL FLOTANTE DE CONFIGURACIÓN -->
+        <div class="settings-popover" id="settings-popover">
+          <h3 class="settings-title">Settings</h3>
+
+          <!-- Modificar Pomodoro tiempo -->
+          <div class="settings-row">
+            <span>Modify time (Pomo)</span>
+            <div class="number-control">
+              <button onclick="changeTimeInput('input-pomo', -1)">−</button>
+              <input type="number" id="input-pomo" value="25" min="1" max="120">
+              <button onclick="changeTimeInput('input-pomo', 1)">+</button>
+            </div>
           </div>
 
-          <!-- Input para nuevo grupo -->
-          <div id="new-group-input-container" style="display: none;">
-            <input type="text" id="input-new-group-name" class="input-secondary-field" placeholder="Nombre del nuevo grupo...">
+          <!-- Modificar Short Break -->
+          <div class="settings-row">
+            <span>Short Break</span>
+            <div class="number-control">
+              <button onclick="changeTimeInput('input-short', -1)">−</button>
+              <input type="number" id="input-short" value="5" min="1" max="60">
+              <button onclick="changeTimeInput('input-short', 1)">+</button>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- FOOTER DEL DESPLEGABLE -->
-      <div class="dropdown-form-footer">
-        <button type="button" id="btn-delete-task-trash" class="btn-trash-flat" onclick="deleteCurrentEditingTask()" style="display: none;" title="Eliminar tarea">🗑</button>
-        <div style="display: flex; gap: 12px; margin-left: auto;">
-          <button type="button" class="btn-cancel-flat" onclick="closeAddForm()">Cancel</button>
-          <button type="button" class="btn-save-dark" onclick="saveDropdownForm()">Save</button>
-        </div>
-      </div>
-    </div>
+          <!-- Modificar Long Break -->
+          <div class="settings-row">
+            <span>Long Break</span>
+            <div class="number-control">
+              <button onclick="changeTimeInput('input-long', -1)">−</button>
+              <input type="number" id="input-long" value="15" min="1" max="60">
+              <button onclick="changeTimeInput('input-long', 1)">+</button>
+            </div>
+          </div>
 
-    <!-- LISTADO DE GRUPOS Y TAREAS -->
-    <div id="groups-container" style="margin-top: 15px;"></div>
+          <!-- Auto Start breaks -->
+          <div class="settings-row">
+            <span>Auto Start breaks</span>
+            <label class="switch">
+              <input type="checkbox" id="input-auto-breaks">
+              <span class="slider"></span>
+            </label>
+          </div>
 
-    <!-- APARTADO DE TAREAS SIN GRUPO -->
-    <div id="ungrouped-container" style="margin-top: 15px;"></div>
-  </div>
+          <!-- Auto start pomodoros -->
+          <div class="settings-row">
+            <span>Auto start pomodoros</span>
+            <label class="switch">
+              <input type="checkbox" id="input-auto-pomos">
+              <span class="slider"></span>
+            </label>
+          </div>
 
-</div>
+          <!-- Long Break interval -->
+          <div class="settings-row">
+            <span>Long Break interval</span>
+            <div class="number-control">
+              <button onclick="changeTimeInput('input-interval', -1)">−</button>
+              <input type="number" id="input-interval" value="4" min="1" max="12">
+              <button onclick="changeTimeInput('input-interval', 1)">+</button>
+            </div>
+          </div>
 
-<!-- VENTANA MODAL (SETTING) -->
-<div class="modal-overlay" id="modal-settings">
-  <div class="modal-card">
-    <div class="modal-header">
-      <span>⚙ SETTING</span>
-      <span class="close-btn" onclick="closeSettings()">&times;</span>
-    </div>
+          <!-- Reminder -->
+          <div class="settings-row">
+            <span>Reminder</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="number" id="input-reminder-min" value="1" min="0" max="10" style="width:36px; height:24px; text-align:center; border-radius:6px; border:1px solid #8e9e7d; font-weight:bold;">
+              <span style="font-size:0.8rem;">min</span>
+              <label class="switch">
+                <input type="checkbox" id="input-reminder">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
 
-    <div class="section-title">⏱ TIMER</div>
-    <div class="setting-group">
-      <label>Time (minutes)</label>
-      <div class="time-inputs">
-        <div class="time-field">
-          <span>Pomodoro</span>
-          <input type="number" id="input-pomo" value="25" min="1">
-        </div>
-        <div class="time-field">
-          <span>Short Break</span>
-          <input type="number" id="input-short" value="5" min="1">
-        </div>
-        <div class="time-field">
-          <span>Long Break</span>
-          <input type="number" id="input-long" value="15" min="1">
-        </div>
-      </div>
-    </div>
-
-    <div class="setting-group">
-      <div class="toggle-row">
-        <span>Auto Start Breaks</span>
-        <label class="switch">
-          <input type="checkbox" id="input-auto-breaks">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="toggle-row">
-        <span>Auto Start Pomodoros</span>
-        <label class="switch">
-          <input type="checkbox" id="input-auto-pomos">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="toggle-row">
-        <span>Long Break interval</span>
-        <input type="number" id="input-interval" value="4" min="1" style="width: 70px; text-align: center;">
-      </div>
-    </div>
-
-    <div class="section-title">📋 TASK</div>
-    <div class="setting-group">
-      <div class="toggle-row">
-        <span>Auto Check Tasks</span>
-        <label class="switch">
-          <input type="checkbox" id="input-auto-check">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="toggle-row">
-        <span>Check to Bottom</span>
-        <label class="switch">
-          <input type="checkbox" id="input-check-bottom" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="section-title">🔊 SOUND</div>
-    <div class="setting-group">
-      <div class="toggle-row">
-        <span>Alarm Sound</span>
-       <select id="input-alarm-sound" class="dropdown-select-field" style="width: 130px; padding: 4px;">
-  <option value="perepere">Perepere</option>
+          <!-- Alarm Sound -->
+          <div class="settings-row">
+            <span>Alarm Sound</span>
+            <select id="input-alarm-sound">
+  <option value="alarm_clock.mp3">Alarm Clock</option>
+  <option value="nana.mp3">Nana</option>
+  <option value="perepere.mp3">Perepere</option>
+  <option value="prueba.mp3">Prueba</option>
+  <option value="rezero.mp3">Re:Zero</option>
+  <option value="ticking.mp3">Ticking</option>
 </select>
-        </select>
-      </div>
-      <div class="toggle-row">
-        <span>Volume</span>
-        <input type="range" id="input-alarm-vol" min="0" max="100" value="50" style="width: 120px;">
-      </div>
-      <div class="toggle-row">
-        <span>Repeat</span>
-        <input type="number" id="input-alarm-repeat" value="1" min="1" style="width: 70px; text-align: center;">
-      </div>
-    </div>
+          </div>
 
-    <div class="section-title">🎨 THEME</div>
-    <div class="setting-group">
-      <div class="toggle-row">
-        <span>Color Themes</span>
-        <div class="color-pickers-row">
-          <div class="color-box-wrapper">
-            <input type="color" id="picker-pomo" class="color-input-box" value="#6b4c9a">
-            <span>Pomo</span>
-          </div>
-          <div class="color-box-wrapper">
-            <input type="color" id="picker-short" class="color-input-box" value="#2d8883">
-            <span>Short</span>
-          </div>
-          <div class="color-box-wrapper">
-            <input type="color" id="picker-long" class="color-input-box" value="#397097">
-            <span>Long</span>
+          <!-- Dark mode when running -->
+          <div class="settings-row">
+            <span>Dark mode when running</span>
+            <label class="switch">
+              <input type="checkbox" id="input-dark-running">
+              <span class="slider"></span>
+            </label>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="setting-group">
-      <div class="toggle-row">
-        <span>Dark Mode when running</span>
-        <label class="switch">
-          <input type="checkbox" id="input-dark-running" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
+        <!-- Información -->
+        <div class="info-row">
+          <div class="info-block">
+            <div class="info-label">Pomodoro Counter</div>
+            <div class="info-value" id="pomodoro-counter">Pomodoro #1 / 4</div>
+          </div>
+          <div class="info-block">
+            <div class="info-label">Current Task</div>
+            <div class="info-value" id="task-title-display">SIN TAREA SELECCIONADA</div>
+          </div>
+        </div>
 
-    <div class="setting-group">
-      <label>🖼 GIF URL</label>
-      <input type="text" id="input-gif" value="https://i.gifer.com/XOsX.gif">
-    </div>
-
-    <div class="section-title">🔔 NOTIFICATION</div>
-    <div class="setting-group">
-      <div class="toggle-row">
-        <span>Reminder</span>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <select id="input-reminder-type" class="dropdown-select-field" style="padding: 4px;">
-            <option value="last">Last</option>
-            <option value="every">Every</option>
-          </select>
-          <input type="number" id="input-reminder-min" value="0" min="0" style="width: 60px; text-align: center; padding: 4px;">
-          <span style="font-size: 0.8rem; color: #555;">min</span>
+        <!-- Ilustración / SVG -->
+        <div class="illustration-card">
+          <svg width="240" height="110" viewBox="0 0 200 90" id="gif-display">
+            <path d="M25 75 L35 50 L45 75 Z" fill="#9bb979" stroke="#1e2d13" stroke-width="2"/>
+            <path d="M35 50 C 20 30, 20 15, 30 10 C 40 20, 35 35, 35 50" fill="#3d5428"/>
+            <path d="M35 50 C 50 30, 50 15, 40 10 C 30 20, 35 35, 35 50" fill="#7f9b62"/>
+            <rect x="20" y="75" width="30" height="10" rx="3" fill="#dcecc9" stroke="#1e2d13" stroke-width="2"/>
+            <rect x="60" y="70" width="12" height="15" rx="2" fill="#ffffff" stroke="#1e2d13" stroke-width="2"/>
+            <path d="M100 80 C 100 60, 120 50, 140 55 C 160 60, 165 80, 165 80 Z" fill="#ffffff" stroke="#1e2d13" stroke-width="2"/>
+            <circle cx="150" cy="50" r="14" fill="#ffffff" stroke="#1e2d13" stroke-width="2"/>
+            <rect x="80" y="78" width="80" height="7" fill="#dcecc9" stroke="#1e2d13" stroke-width="2"/>
+            <text x="168" y="40" fill="#1e2d13" font-size="10" font-weight="bold">z</text>
+            <text x="174" y="32" fill="#1e2d13" font-size="14" font-weight="bold">Z</text>
+          </svg>
         </div>
       </div>
-    </div>
 
-    <div class="modal-footer">
-      <button class="save-btn" onclick="saveSettings()">Guardar</button>
-    </div>
+<!-- CONTENEDOR PRINCIPAL DE TAREAS -->
+      <section class="tasks-container">
+        <div class="tasks-header" style="position: relative;">
+          <h2>Tareas</h2>
+          <button id="btn-open-add-task" class="btn-add-task" onclick="openAddForm()">+ Tarea</button>
+
+          <!-- POPOVER FLOTANTE DE TAREAS (Anidado al estilo Settings del Timer) -->
+          <div id="dropdown-form-card" class="settings-popover task-popover" style="display: none;">
+            <div class="task-modal-header">
+              <h3 class="settings-title">⚙ Settings - Tareas</h3>
+              <button class="btn-icon-close" onclick="closeAddForm()">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); saveDropdownForm();">
+              <!-- Nombre de la tarea -->
+              <div class="settings-row flex-column">
+                <label for="input-task-name">Nombre de la Tarea</label>
+                <input type="text" id="input-task-name" placeholder="What are you working on?" required />
+              </div>
+
+              <!-- Estimado de Pomodoros -->
+              <div class="settings-row">
+                <span>Est Pomodoros</span>
+                <div class="number-control">
+                  <button type="button" onclick="adjustPomo(-1)">−</button>
+                  <input type="number" id="input-task-pomo" value="1" min="1" max="99">
+                  <button type="button" onclick="adjustPomo(1)">+</button>
+                </div>
+              </div>
+
+              <!-- Opción para activar/desactivar asignación de Grupo -->
+              <div class="settings-row">
+                <span>Asignar a un Grupo</span>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-group-check" onchange="toggleGroupSection()" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <!-- Selección / Vinculación de Grupo -->
+              <div id="group-section-container">
+                <div class="settings-row">
+                  <span>Grupo de la Tarea</span>
+                  <select id="select-task-group" class="settings-select" onchange="onGroupSelectChange(this.value)">
+                    <!-- Opciones dinámicas -->
+                  </select>
+                </div>
+
+                <!-- Input para Crear Nuevo Grupo Inline -->
+                <div class="settings-row" id="new-group-input-container" style="display: none;">
+                  <span>Nuevo Grupo</span>
+                  <input type="text" id="input-new-group-name" placeholder="Nombre..." />
+                </div>
+              </div>
+
+              <!-- Acciones (Guardar, Cancelar/Borrar) -->
+              <div class="task-modal-actions" style="margin-top: 12px; display: flex; gap: 8px;">
+                <button type="button" id="btn-delete-task-trash" class="btn-pill" onclick="deleteCurrentEditingTask()" style="display:none;">Cancel</button>
+                <button type="button" class="btn-play-pause" style="width: 100%; height: 36px; font-size: 0.9rem;" onclick="saveDropdownForm()">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="tasks-list-wrapper">
+          <!-- Grupos creados -->
+          <div id="groups-container"></div>
+          <!-- Tareas sin grupo -->
+          <div id="ungrouped-container"></div>
+        </div>
+      </section>
   </div>
-</div>
 
-<script src="js/data.js"></script>
-<script src="js/task.js"></script>
-<script src="js/pomodoro.js"></script>
-<link rel="stylesheet" href="css/pomodoro.css">
-
+  <script>lucide.createIcons();</script>
+  <script src="js/data.js"></script>
+  <script src="js/pomodoro.js"></script>
+  <script src="js/task.js"></script>
 </body>
 </html>
