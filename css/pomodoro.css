@@ -1,219 +1,324 @@
-:root { 
-  --color-pomodoro: #ba4949;    
-  --color-shortBreak: #38858a;    
-  --color-longBreak: #397097;      
-      
-  --bg-color: var(--color-pomodoro); 
-  --card-bg: rgba(255, 255, 255, 0.15); 
-  --text-color: #ffffff; 
-  --btn-bg: #ffffff; 
-  --btn-text: var(--color-pomodoro); 
+/* ==========================================================================
+   ESTILO "WEBY" MINIMALISTA Y REDONDEADO CON PALETA VERDE POMODORO
+   ========================================================================== */
+
+:root {
+  /* Paleta de tonos verdes inspirada en tu diseño visual */
+  --bg-main: #a3b899;        /* Fondo principal suave */
+  --card-bg: #b8cba9;        /* Fondo de los paneles y tarjetas */
+  --card-inner: #c7d7bc;     /* Contenedores internos o inputs */
+  --accent-dark: #3a5331;    /* Verde oscuro para contrastes y textos importantes */
+  --text-main: #273821;      /* Texto principal oscuro */
+  --text-light: #ffffff;     /* Texto claro */
+  
+  /* Colores de estados del Pomodoro */
+  --color-pomodoro: #3a5331; 
+  --color-shortBreak: #4d6a42; 
+  --color-longBreak: #2c3f25; 
 }
 
-body.mode-pomodoro { --bg-color: var(--color-pomodoro); --btn-text: var(--color-pomodoro); } 
-body.mode-shortBreak { --bg-color: var(--color-shortBreak); --btn-text: var(--color-shortBreak); } 
-body.mode-longBreak { --bg-color: var(--color-longBreak); --btn-text: var(--color-longBreak); }
+/* Transiciones de color según el modo activo */
+body.mode-pomodoro { background-color: #9cb391; }
+body.mode-shortBreak { background-color: #a7bc9b; }
+body.mode-longBreak { background-color: #8da482; }
 
-body.running-dark { 
-  --bg-color: #000000 !important; 
-  --card-bg: #1e1e1e !important; 
-  --btn-text: #000000 !important; 
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-* { 
-  box-sizing: border-box; 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-  margin: 0; 
-  padding: 0; 
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-body { 
-  background-color: var(--bg-color); 
-  color: var(--text-color); 
-  display: flex; 
-  justify-content: center; 
-  padding: 40px 20px; 
-  min-height: 100vh; 
-  transition: background-color 0.4s ease; 
+/* --- CONTENEDOR PRINCIPAL ESTILO VENTANA "WEBY" --- */
+.app-container {
+  width: 100%;
+  max-width: 920px;
+  background: var(--card-bg);
+  border-radius: 28px; /* Esquinas muy redondeadas como pediste */
+  padding: 30px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 25px;
+  box-shadow: 0 15px 35px rgba(39, 56, 33, 0.15);
+  border: 4px solid #b2c6a4;
 }
 
-.app-container { 
-  width: 100%; 
-  max-width: 900px; 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 30px; 
+@media (max-width: 768px) {
+  .app-container {
+    grid-template-columns: 1fr;
+  }
 }
 
-@media (max-width: 768px) { 
-  .app-container { grid-template-columns: 1fr; } 
+/* --- TARJETAS / PANELES GENERALES --- */
+.card {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 22px;
+  padding: 25px;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.4);
 }
 
-.card { 
-  background: var(--card-bg); 
-  border-radius: 12px; 
-  padding: 25px; 
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-  backdrop-filter: blur(5px); 
-}
-
-.timer-section { 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  text-align: center; 
-} 
-
-.top-bar { 
-  width: 100%; 
-  display: flex; 
-  justify-content: flex-end; 
-  margin-bottom: 15px; 
-} 
-
-.icon-btn { 
-  background: rgba(255,255,255,0.2); 
-  border: none; 
-  color: white; 
-  padding: 8px 14px; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  font-weight: bold; 
-} 
-
-.mode-buttons { 
-  display: flex; 
-  gap: 10px; 
-  margin-bottom: 20px; 
-} 
-
-.mode-btn { 
-  background: transparent; 
-  border: none; 
-  color: white; 
-  padding: 6px 12px; 
-  border-radius: 4px; 
-  cursor: pointer; 
-  font-weight: bold; 
-  opacity: 0.8; 
-} 
-
-.mode-btn.active { 
-  background: rgba(0,0,0,0.2); 
-  opacity: 1; 
-}
-
-.gif-container { 
-  width: 150px; 
-  height: 150px; 
-  border-radius: 8px; 
-  overflow: hidden; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  margin-bottom: 15px; 
-} 
-
-#gif-display { 
-  width: 100%; 
-  height: 100%; 
-  object-fit: cover; 
-}
-
-.task-title-display { 
-  font-size: 1.1rem; 
-  font-weight: bold; 
-  letter-spacing: 1px; 
-  text-transform: uppercase; 
-  margin-bottom: 6px; 
-  opacity: 0.95; 
-} 
-
-.pomodoro-counter { 
-  display: inline-flex; 
-  background: rgba(0,0,0,0.2); 
-  border: 1px solid rgba(255,255,255,0.3); 
-  border-radius: 50px; 
-  padding: 4px 14px; 
-  font-size: 0.85rem; 
-  font-weight: 600; 
-  margin-bottom: 15px; 
-} 
-
-.timer-display { 
-  font-size: 5rem; 
-  font-weight: bold; 
-  margin-bottom: 20px; 
-  line-height: 1; 
-} 
-
-.controls-row { 
-  display: flex; 
-  align-items: center; 
-  gap: 15px; 
-} 
-
-.main-btn { 
-  background: var(--btn-bg); 
-  color: var(--btn-text); 
-  border: none; 
-  padding: 12px 35px; 
-  font-size: 1.3rem; 
-  font-weight: bold; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  min-width: 140px; 
-} 
-
-.secondary-btn { 
-  background: rgba(255,255,255,0.2); 
-  border: none; 
-  color: white; 
-  width: 48px; 
-  height: 48px; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  font-size: 1.2rem; 
-}
-
-.tasks-section h2 { 
-  margin-bottom: 15px; 
-  border-bottom: 2px solid rgba(255,255,255,0.2); 
-  padding-bottom: 8px; 
-}
-
-.action-buttons-row { 
-  display: flex; 
-  margin-bottom: 15px; 
-} 
-
-.action-buttons-row.single-btn-layout .action-pill-btn { 
-  width: 100%; 
-}
-
-.action-pill-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
+/* --- SECCIÓN TEMPORIZADOR (IZQUIERDA) --- */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
-.action-pill-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+/* Pestañas superiores (Pomodoro, Short Break, Long Break) */
+.mode-buttons {
+  display: flex;
+  background: rgba(39, 56, 33, 0.12);
+  padding: 6px;
+  border-radius: 30px;
+  gap: 6px;
+  margin-bottom: 22px;
 }
 
-/* Estilos de la Modal de Configuración (Settings) */
+.mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.25s ease;
+}
+
+.mode-btn.active {
+  background: var(--accent-dark);
+  color: var(--text-light);
+  opacity: 1;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Imagen estática central (reemplaza al gif pesado) */
+.gif-container {
+  width: 100%;
+  max-width: 240px;
+  height: 130px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card-inner);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+#gif-display {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Título de tarea y contador */
+.task-title-display {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.pomodoro-counter {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  opacity: 0.8;
+  margin-bottom: 15px;
+}
+
+/* Reloj grande */
+.timer-display {
+  font-size: 4.8rem;
+  font-weight: 800;
+  color: var(--accent-dark);
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+  line-height: 1;
+}
+
+/* Fila de controles (Reiniciar, Start/Pause, Saltar, Ajustes) */
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-btn {
+  background: var(--accent-dark);
+  color: var(--text-light);
+  border: none;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(58, 83, 49, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.main-btn:active {
+  transform: scale(0.96);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.6);
+  border: none;
+  color: var(--accent-dark);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: background 0.2s;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+
+/* --- SECCIÓN DE TAREAS (DERECHA) ESTILO LISTA COMPACTA --- */
+.tasks-section {
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.tasks-section h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent-dark);
+  margin-bottom: 15px;
+}
+
+/* Botón de agregar tarea estilo pastilla redondeada */
+.action-buttons-row {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.action-pill-btn {
+  background: var(--accent-dark);
+  color: var(--text-light);
+  border: none;
+  width: 100%;
+  padding: 10px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(58, 83, 49, 0.2);
+  transition: opacity 0.2s;
+}
+
+.action-pill-btn:hover {
+  opacity: 0.9;
+}
+
+/* Contenedores de listas y grupos */
+#groups-container, #ungrouped-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Estilo para las tarjetas de grupos / categorías de tareas */
+.task-group-card {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.task-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent-dark);
+  cursor: pointer;
+}
+
+/* Ítems individuales dentro de la lista de tareas (Formato Checklist compacto) */
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin-top: 6px;
+  transition: all 0.2s ease;
+}
+
+/* Resaltado especial para la tarea seleccionada actual */
+.task-item.active-task {
+  background: #ffffff !important;
+  border: 2px solid var(--accent-dark);
+  box-shadow: 0 4px 12px rgba(58, 83, 49, 0.15);
+}
+
+.task-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.task-item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.task-edit-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.task-edit-btn:hover {
+  opacity: 1;
+}
+
+
+/* --- VENTANA MODAL DE CONFIGURACIÓN (SETTINGS) REDONDEADA --- */
 .modal-overlay {
   display: none;
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(39, 56, 33, 0.4);
+  backdrop-filter: blur(4px);
   justify-content: center;
   align-items: center;
   z-index: 1000;
@@ -224,39 +329,43 @@ body {
 }
 
 .modal-card {
-  background: #ffffff;
-  color: #333333;
+  background: #eaf2e6;
+  color: var(--text-main);
   width: 90%;
-  max-width: 450px;
-  border-radius: 12px;
+  max-width: 420px;
+  border-radius: 24px;
   padding: 25px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-  max-height: 90vh;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  max-height: 85vh;
   overflow-y: auto;
+  border: 3px solid #b2c6a4;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: bold;
-  font-size: 1.1rem;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--accent-dark);
   margin-bottom: 15px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(58, 83, 49, 0.1);
+  padding-bottom: 8px;
 }
 
 .close-btn {
   cursor: pointer;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
+  font-weight: bold;
 }
 
 .section-title {
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #777;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--accent-dark);
   margin: 15px 0 8px 0;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .setting-group {
@@ -267,8 +376,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .time-inputs {
@@ -279,16 +389,20 @@ body {
 .time-field {
   display: flex;
   flex-direction: column;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
   flex: 1;
 }
 
 .time-field input {
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 8px;
+  border: 1px solid #b2c6a4;
+  border-radius: 10px;
   text-align: center;
   margin-top: 4px;
+  background: #ffffff;
+  font-weight: bold;
+  color: var(--accent-dark);
 }
 
 .modal-footer {
@@ -298,11 +412,12 @@ body {
 }
 
 .save-btn {
-  background: #38858a;
+  background: var(--accent-dark);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 10px 24px;
+  border-radius: 14px;
   font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 4px 10px rgba(58, 83, 49, 0.2);
 }
