@@ -3,7 +3,7 @@ let timeLeft = config.pomodoro * 60;
 let timerInterval = null;
 let isRunning = false;
 let pomodoroCount = 1;
-let isTransitioning = false; // Bandera para controlar la pausa de los 10 segundos
+let isTransitioning = false; // Bandera para controlar la pausa de transición
 
 const timerDisplay = document.getElementById('timer-display');
 const startBtn = document.getElementById('start-btn');
@@ -101,6 +101,19 @@ function onTimerComplete() {
     alarmSound.play();
   }
 
+  // Lanzar notificación en pantalla si está permitido
+  if ("Notification" in window && Notification.permission === "granted") {
+    if (currentMode === 'pomodoro') {
+      new Notification("¡Pomodoro Finalizado! ⏱️", {
+        body: "Es hora de tomar un descanso."
+      });
+    } else {
+      new Notification("¡Descanso Terminado! 🚀", {
+        body: "Es hora de volver a concentrarse."
+      });
+    }
+  }
+
   // Si estábamos en modo pomodoro, sumamos +1 pomodoro completado a la tarea activa si existe
   if (currentMode === 'pomodoro' && selectedTaskFullTitle) {
     addCompletedPomoToActiveTask();
@@ -124,15 +137,14 @@ function onTimerComplete() {
   // Cambiamos al siguiente modo inmediatamente
   switchMode(nextMode);
 
-  // Evaluamos si debe iniciar automáticamente según las opciones (Auto Start Breaks / Auto Start Pomodoros)
+  // Evaluamos si debe iniciar automáticamente según las opciones
   const shouldAutoStart = (nextMode.includes('Break') && config.autoBreaks) || 
                           (nextMode === 'pomodoro' && config.autoPomos);
 
   if (shouldAutoStart) {
     isTransitioning = true;
-    let countdownSecs = 5; // <--- AQUÍ PUEDES CAMBIAR EL TIEMPO (ej. 5 o 15)
+    let countdownSecs = 5; // <--- Aquí cambias los segundos de espera (puedes ajustarlo a 5, 10, etc.)
     
-    // Mostramos aviso visual inicial de los 10 segundos
     counterDisplay.textContent = `Iniciando en ${countdownSecs}s...`;
 
     const transitionInterval = setInterval(() => {
@@ -141,13 +153,19 @@ function onTimerComplete() {
         counterDisplay.textContent = `Iniciando en ${countdownSecs}s...`;
       } else {
         clearInterval(transitionInterval);
-        // Verificamos que el usuario no haya interactuado manualmente durante la espera
         if (isTransitioning) {
-          updateCounterDisplay(); // Restaura el texto normal del contador
+          updateCounterDisplay(); 
           startTimer();
         }
       }
     }, 1000);
+  }
+}
+
+// Función auxiliar para solicitar permisos de notificación del navegador
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
   }
 }
 
@@ -280,3 +298,4 @@ if (typeof renderGroups === 'function') {
   renderGroups();
 }
 updateCounterDisplay();
+requestNotificationPermission();
