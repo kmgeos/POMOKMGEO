@@ -1,25 +1,22 @@
 /* ==========================================================================
-   ESTILO "WEBY" MINIMALISTA Y REDONDEADO CON PALETA VERDE POMODORO
+   ESTILO "WEBY" MINIMALISTA Y REDONDEADO (BASADO EN TU IMAGEN DE REFERENCIA)
+   - Fondo general sin contenedor pesado para el temporizador
+   - Panel de tareas en tarjeta destacada con bordes redondeados
    ========================================================================== */
 
 :root {
-  /* Paleta de tonos verdes inspirada en tu diseño visual */
-  --bg-main: #a3b899;        /* Fondo principal suave */
-  --card-bg: #b8cba9;        /* Fondo de los paneles y tarjetas */
-  --card-inner: #c7d7bc;     /* Contenedores internos o inputs */
-  --accent-dark: #3a5331;    /* Verde oscuro para contrastes y textos importantes */
-  --text-main: #273821;      /* Texto principal oscuro */
+  /* Paleta de tonos verdes suaves (Inspirada en tu imagen de referencia) */
+  --bg-main: #a3b899;        /* Color principal de fondo para la pantalla de inicio */
+  --card-bg: #b8cba9;        /* Fondo del recuadro exclusivo de la sección de tareas */
+  --card-inner: #c7d7bc;     /* Contenedores internos o elementos de tareas */
+  --accent-dark: #3a5331;    /* Verde oscuro para textos importantes, botones y bordes activos */
+  --text-main: #273821;      /* Color principal del texto */
   --text-light: #ffffff;     /* Texto claro */
-  
-  /* Colores de estados del Pomodoro */
-  --color-pomodoro: #3a5331; 
-  --color-shortBreak: #4d6a42; 
-  --color-longBreak: #2c3f25; 
 }
 
-/* Transiciones de color según el modo activo */
-body.mode-pomodoro { background-color: #9cb391; }
-body.mode-shortBreak { background-color: #a7bc9b; }
+/* Transiciones de color corporativas según el modo activo */
+body.mode-pomodoro { background-color: #a3b899; }
+body.mode-shortBreak { background-color: #9cb391; }
 body.mode-longBreak { background-color: #8da482; }
 
 * {
@@ -39,18 +36,14 @@ body {
   padding: 20px;
 }
 
-/* --- CONTENEDOR PRINCIPAL ESTILO VENTANA "WEBY" --- */
+/* --- CONTENEDOR PRINCIPAL GENERAL --- */
 .app-container {
   width: 100%;
   max-width: 920px;
-  background: var(--card-bg);
-  border-radius: 28px; /* Esquinas muy redondeadas como pediste */
-  padding: 30px;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
-  gap: 25px;
-  box-shadow: 0 15px 35px rgba(39, 56, 33, 0.15);
-  border: 4px solid #b2c6a4;
+  gap: 35px;
+  align-items: center;
 }
 
 @media (max-width: 768px) {
@@ -59,20 +52,34 @@ body {
   }
 }
 
-/* --- TARJETAS / PANELES GENERALES --- */
-.card {
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 22px;
-  padding: 25px;
-  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.4);
-}
-
-/* --- SECCIÓN TEMPORIZADOR (IZQUIERDA) --- */
-.timer-section {
+/* --- SECCIÓN TEMPORIZADOR (IZQUIERDA - SIN RECUADRO PESADO) --- */
+.pomodoro-panel, .timer-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  background: transparent; /* Todo el timer queda integrado al color de fondo */
+  box-shadow: none;
+  padding: 10px;
+}
+
+/* Botón de configuración flotante superior */
+#open-settings {
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  color: var(--accent-dark);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: background 0.2s;
+}
+
+#open-settings:hover {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 /* Pestañas superiores (Pomodoro, Short Break, Long Break) */
@@ -105,19 +112,18 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* Imagen estática central (reemplaza al gif pesado) */
+/* Contenedor del GIF (Cuadrado y redondeado estilo Weby) */
 .gif-container {
-  width: 100%;
-  max-width: 240px;
-  height: 130px;
-  border-radius: 16px;
+  width: 150px;
+  height: 150px;
+  border-radius: 20px;
   overflow: hidden;
-  background: var(--card-inner);
+  background: rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 #gif-display {
@@ -126,8 +132,8 @@ body {
   object-fit: cover;
 }
 
-/* Título de tarea y contador */
-.task-title-display {
+/* Título de tarea y contador de pomodoros */
+#task-title-display {
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.5px;
@@ -136,7 +142,7 @@ body {
   margin-bottom: 4px;
 }
 
-.pomodoro-counter {
+#pomodoro-counter {
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--accent-dark);
@@ -144,9 +150,9 @@ body {
   margin-bottom: 15px;
 }
 
-/* Reloj grande */
-.timer-display {
-  font-size: 4.8rem;
+/* Reloj principal grande */
+#timer-display {
+  font-size: 5rem;
   font-weight: 800;
   color: var(--accent-dark);
   letter-spacing: -1px;
@@ -154,31 +160,14 @@ body {
   line-height: 1;
 }
 
-/* Fila de controles (Reiniciar, Start/Pause, Saltar, Ajustes) */
-.controls-row {
+/* Fila de controles del temporizador */
+.timer-controls {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.main-btn {
-  background: var(--accent-dark);
-  color: var(--text-light);
-  border: none;
-  padding: 12px 28px;
-  font-size: 1rem;
-  font-weight: 800;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(58, 83, 49, 0.3);
-  transition: transform 0.1s ease;
-}
-
-.main-btn:active {
-  transform: scale(0.96);
-}
-
-.secondary-btn {
+.timer-controls button:not(#start-btn) {
   background: rgba(255, 255, 255, 0.6);
   border: none;
   color: var(--accent-dark);
@@ -195,19 +184,40 @@ body {
   transition: background 0.2s;
 }
 
-.secondary-btn:hover {
+.timer-controls button:not(#start-btn):hover {
   background: rgba(255, 255, 255, 0.9);
 }
 
+#start-btn {
+  background: var(--accent-dark);
+  color: var(--text-light);
+  border: none;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(58, 83, 49, 0.3);
+  transition: transform 0.1s ease;
+}
 
-/* --- SECCIÓN DE TAREAS (DERECHA) ESTILO LISTA COMPACTA --- */
-.tasks-section {
-  background: rgba(255, 255, 255, 0.18);
+#start-btn:active {
+  transform: scale(0.96);
+}
+
+
+/* --- SECCIÓN DE TAREAS (DERECHA - CON RECUADRO EXCLUSIVO Y REDONDEADO) --- */
+.tasks-panel, .tasks-section {
+  background: var(--card-bg);
+  border-radius: 28px;
+  padding: 25px;
+  box-shadow: 0 15px 35px rgba(39, 56, 33, 0.15);
+  border: 4px solid #b2c6a4;
   display: flex;
   flex-direction: column;
 }
 
-.tasks-section h2 {
+.tasks-panel h2 {
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--accent-dark);
@@ -215,42 +225,93 @@ body {
 }
 
 /* Botón de agregar tarea estilo pastilla redondeada */
-.action-buttons-row {
-  display: flex;
-  margin-bottom: 15px;
-}
-
-.action-pill-btn {
+#btn-add-task {
   background: var(--accent-dark);
   color: var(--text-light);
   border: none;
   width: 100%;
-  padding: 10px;
-  border-radius: 16px;
+  padding: 12px;
+  border-radius: 18px;
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(58, 83, 49, 0.2);
+  margin-bottom: 15px;
   transition: opacity 0.2s;
 }
 
-.action-pill-btn:hover {
+#btn-add-task:hover {
   opacity: 0.9;
 }
 
-/* Contenedores de listas y grupos */
+/* Tarjeta / Formulario desplegable para agregar o editar tareas */
+#dropdown-form-card {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+#dropdown-form-card input[type="text"],
+#dropdown-form-card select,
+#dropdown-form-card input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #b2c6a4;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.pomo-input-container, #group-section-container {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin-bottom: 10px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.form-actions button {
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: none;
+}
+
+.form-actions button:first-child {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-main);
+}
+
+#btn-save-task {
+  background: var(--accent-dark);
+  color: var(--text-light);
+}
+
+/* Contenedores de grupos y tareas */
 #groups-container, #ungrouped-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* Estilo para las tarjetas de grupos / categorías de tareas */
+/* Estilo para las tarjetas de grupos de tareas */
 .task-group-card {
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 14px;
-  padding: 10px 14px;
-  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 16px;
+  padding: 12px 14px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.03);
 }
 
@@ -264,15 +325,15 @@ body {
   cursor: pointer;
 }
 
-/* Ítems individuales dentro de la lista de tareas (Formato Checklist compacto) */
+/* Ítems individuales dentro de la lista de tareas (Checklist compacto) */
 .task-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.6);
-  padding: 8px 12px;
-  border-radius: 10px;
-  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-top: 8px;
   transition: all 0.2s ease;
 }
 
@@ -294,10 +355,10 @@ body {
 
 .task-item-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
-.task-edit-btn {
+.task-edit-btn, .task-delete-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -306,13 +367,13 @@ body {
   transition: opacity 0.2s;
 }
 
-.task-edit-btn:hover {
+.task-edit-btn:hover, .task-delete-btn:hover {
   opacity: 1;
 }
 
 
 /* --- VENTANA MODAL DE CONFIGURACIÓN (SETTINGS) REDONDEADA --- */
-.modal-overlay {
+.modal {
   display: none;
   position: fixed;
   top: 0; left: 0;
@@ -324,11 +385,11 @@ body {
   z-index: 1000;
 }
 
-.modal-overlay.active {
+.modal.active {
   display: flex;
 }
 
-.modal-card {
+.modal-content {
   background: #eaf2e6;
   color: var(--text-main);
   width: 90%;
@@ -336,88 +397,49 @@ body {
   border-radius: 24px;
   padding: 25px;
   box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-  max-height: 85vh;
-  overflow-y: auto;
   border: 3px solid #b2c6a4;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.modal-content h2 {
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--accent-dark);
   margin-bottom: 15px;
   border-bottom: 2px solid rgba(58, 83, 49, 0.1);
   padding-bottom: 8px;
 }
 
-.close-btn {
-  cursor: pointer;
-  font-size: 1.3rem;
-  font-weight: bold;
-}
-
-.section-title {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--accent-dark);
-  margin: 15px 0 8px 0;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.setting-group {
-  margin-bottom: 12px;
-}
-
-.toggle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.time-inputs {
-  display: flex;
-  gap: 10px;
-}
-
-.time-field {
+.modal-content label {
   display: flex;
   flex-direction: column;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  flex: 1;
+  color: var(--accent-dark);
+  margin-bottom: 10px;
 }
 
-.time-field input {
+.modal-content input[type="number"] {
   padding: 8px;
   border: 1px solid #b2c6a4;
   border-radius: 10px;
-  text-align: center;
   margin-top: 4px;
   background: #ffffff;
-  font-weight: bold;
   color: var(--accent-dark);
+  font-weight: bold;
 }
 
-.modal-footer {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
+.modal-content input[type="checkbox"] {
+  margin-right: 8px;
 }
 
-.save-btn {
+.modal-content button {
   background: var(--accent-dark);
   color: white;
   border: none;
-  padding: 10px 24px;
+  padding: 10px 20px;
   border-radius: 14px;
   font-weight: bold;
   cursor: pointer;
+  margin-top: 10px;
   box-shadow: 0 4px 10px rgba(58, 83, 49, 0.2);
 }
