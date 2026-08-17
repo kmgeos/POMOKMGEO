@@ -1,445 +1,678 @@
-/* ==========================================================================
-   ESTILO "WEBY" MINIMALISTA Y REDONDEADO (BASADO EN TU IMAGEN DE REFERENCIA)
-   - Fondo general sin contenedor pesado para el temporizador
-   - Panel de tareas en tarjeta destacada con bordes redondeados
-   ========================================================================== */
-
 :root {
-  /* Paleta de tonos verdes suaves (Inspirada en tu imagen de referencia) */
-  --bg-main: #a3b899;        /* Color principal de fondo para la pantalla de inicio */
-  --card-bg: #b8cba9;        /* Fondo del recuadro exclusivo de la sección de tareas */
-  --card-inner: #c7d7bc;     /* Contenedores internos o elementos de tareas */
-  --accent-dark: #3a5331;    /* Verde oscuro para textos importantes, botones y bordes activos */
-  --text-main: #273821;      /* Color principal del texto */
-  --text-light: #ffffff;     /* Texto claro */
+  /* Paleta Normal (Clara) */
+  --bg-body: #e3ebd9;             /* Fondo exterior general */
+  --window-bg: #dcecc9;           /* Marco/Ventana principal */
+  --pomo-card: #9bb979;           /* Tarjeta izquierda Pomodoro */
+  --pomo-tab-bg: rgba(0, 0, 0, 0.08); /* Pestañas de descanso/trabajo */
+  --pomo-tab-active: #3e5229;     /* Pestaña activa */
+  --tasks-header: #3d5428;        /* Banner superior Tareas */
+  --tasks-body: #e4f0d7;          /* Fondo contenedor de tareas */
+  --task-item-bg: #ffffff;        /* Ítems no seleccionados */
+  --task-item-active: #ffffff;    /* Ítem seleccionado */
+  --text-dark: #1e2d13;           /* Color texto principal */
+  --text-light: #ffffff;          /* Color texto secundario / contrastante */
+  --btn-dark: #3a4e26;
+  --btn-light: #eaf3e1;
+  --popover-bg: #f0f5e8;          /* Fondo de modales/popovers */
+  --input-border: #8e9e7d;       /* Bordes de entradas e insumos */
+  --meta-info-bg: #f1f5eb;        /* Etiquetas de pomodoros estimados */
 }
 
-/* Transiciones de color corporativas según el modo activo */
-body.mode-pomodoro { background-color: #a3b899; }
-body.mode-shortBreak { background-color: #9cb391; }
-body.mode-longBreak { background-color: #8da482; }
+/* =========================================
+   MODO OSCURO (DARK THEME)
+   ========================================= */
+body.dark-theme {
+  --bg-body: #181d15;
+  --window-bg: #222a1e;
+  --pomo-card: #2c3826;
+  --pomo-tab-bg: rgba(255, 255, 255, 0.08);
+  --pomo-tab-active: #4a5e3b;
+  --tasks-header: #1b2615;
+  --tasks-body: #253021;
+  --task-item-bg: #1e271a;
+  --task-item-active: #303d2a;
+  --text-dark: #e1e8dc;
+  --text-light: #ffffff;
+  --btn-dark: #475a37;
+  --btn-light: #323e2d;
+  --popover-bg: #2a3426;
+  --input-border: #4a5c41;
+  --meta-info-bg: #192216;
+}
 
 * {
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
+  font-family: 'Quicksand', sans-serif;
 }
 
 body {
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: var(--bg-body);
+  color: var(--text-dark);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
+  padding: 30px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* --- CONTENEDOR PRINCIPAL GENERAL --- */
-.app-container {
+/* VENTANA PRINCIPAL (Contenedor Web) */
+.app-window {
+  background-color: var(--window-bg);
   width: 100%;
-  max-width: 920px;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 35px;
-  align-items: center;
+  max-width: 1280px;
+  min-height: 720px;
+  border-radius: 28px;
+  padding: 20px 28px 32px 28px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .app-container {
+/* Puntos estilo Mac (Red, Yellow, Green) */
+.window-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+.dot-red { background-color: #ff5f56; }
+.dot-yellow { background-color: #ffbd2e; }
+.dot-green { background-color: #27c93f; }
+
+/* Cuerpo principal: Grid de 2 columnas */
+.app-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  flex-grow: 1;
+}
+
+@media (max-width: 900px) {
+  .app-body {
     grid-template-columns: 1fr;
   }
 }
 
-/* --- SECCIÓN TEMPORIZADOR (IZQUIERDA - SIN RECUADRO PESADO) --- */
-.pomodoro-panel, .timer-section {
+/* =========================================
+   1. SECCIÓN IZQUIERDA: POMODORO
+   ========================================= */
+.pomodoro-card {
+  position: relative; /* Permite posicionar el popover dentro de la tarjeta */
+  background-color: var(--pomo-card);
+  border-radius: 28px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  background: transparent; /* Todo el timer queda integrado al color de fondo */
-  box-shadow: none;
-  padding: 10px;
+  justify-content: space-between;
+  transition: background-color 0.3s ease;
 }
 
-/* Botón de configuración flotante superior */
-#open-settings {
-  background: rgba(255, 255, 255, 0.4);
-  border: none;
-  color: var(--accent-dark);
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-bottom: 18px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  transition: background 0.2s;
-}
-
-#open-settings:hover {
-  background: rgba(255, 255, 255, 0.7);
-}
-
-/* Pestañas superiores (Pomodoro, Short Break, Long Break) */
-.mode-buttons {
-  display: flex;
-  background: rgba(39, 56, 33, 0.12);
+/* Selector de pestañas superiores */
+.pomo-tabs {
+  background-color: var(--pomo-tab-bg);
   padding: 6px;
-  border-radius: 30px;
-  gap: 6px;
-  margin-bottom: 22px;
-}
-
-.mode-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: all 0.25s ease;
-}
-
-.mode-btn.active {
-  background: var(--accent-dark);
-  color: var(--text-light);
-  opacity: 1;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* Contenedor del GIF (Cuadrado y redondeado estilo Weby) */
-.gif-container {
-  width: 150px;
-  height: 150px;
-  border-radius: 20px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.25);
+  border-radius: 40px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-#gif-display {
+  gap: 6px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 420px;
+  justify-content: space-between;
 }
 
-/* Título de tarea y contador de pomodoros */
-#task-title-display {
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-
-#pomodoro-counter {
-  font-size: 0.8rem;
+.tab-btn {
+  border: none;
+  background: transparent;
+  padding: 10px 22px;
+  border-radius: 30px;
   font-weight: 700;
-  color: var(--accent-dark);
-  opacity: 0.8;
-  margin-bottom: 15px;
+  color: var(--text-dark);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
 }
 
-/* Reloj principal grande */
-#timer-display {
-  font-size: 5rem;
-  font-weight: 800;
-  color: var(--accent-dark);
-  letter-spacing: -1px;
-  margin-bottom: 20px;
+.tab-btn.active {
+  background-color: var(--pomo-tab-active);
+  color: #ffffff;
+}
+
+/* Reloj Principal */
+.timer-display {
+  font-size: 6.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  letter-spacing: -2px;
   line-height: 1;
+  margin: 15px 0;
 }
 
-/* Fila de controles del temporizador */
-.timer-controls {
+/* Botones de Control */
+.controls-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.timer-controls button:not(#start-btn) {
-  background: rgba(255, 255, 255, 0.6);
+.btn-pill {
+  background-color: var(--btn-light);
+  color: var(--text-dark);
   border: none;
-  color: var(--accent-dark);
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
+  border-radius: 30px;
+  padding: 12px 24px;
+  font-weight: 700;
   font-size: 1rem;
-  font-weight: bold;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-play-pause {
+  background-color: var(--btn-dark);
+  color: #ffffff;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.2rem;
+}
+
+.btn-settings {
+  background-color: var(--btn-dark);
+  color: #ffffff;
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  transition: background 0.2s;
-}
-
-.timer-controls button:not(#start-btn):hover {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-#start-btn {
-  background: var(--accent-dark);
-  color: var(--text-light);
-  border: none;
-  padding: 12px 32px;
-  font-size: 1rem;
-  font-weight: 800;
-  border-radius: 30px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(58, 83, 49, 0.3);
-  transition: transform 0.1s ease;
 }
 
-#start-btn:active {
-  transform: scale(0.96);
-}
-
-
-/* --- SECCIÓN DE TAREAS (DERECHA - CON RECUADRO EXCLUSIVO Y REDONDEADO) --- */
-.tasks-panel, .tasks-section {
-  background: var(--card-bg);
-  border-radius: 28px;
-  padding: 25px;
-  box-shadow: 0 15px 35px rgba(39, 56, 33, 0.15);
-  border: 4px solid #b2c6a4;
+/* Información Inferior */
+.info-row {
   display: flex;
-  flex-direction: column;
-}
-
-.tasks-panel h2 {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--accent-dark);
-  margin-bottom: 15px;
-}
-
-/* Botón de agregar tarea estilo pastilla redondeada */
-#btn-add-task {
-  background: var(--accent-dark);
-  color: var(--text-light);
-  border: none;
+  justify-content: space-around;
   width: 100%;
-  padding: 12px;
-  border-radius: 18px;
-  font-weight: 700;
+  margin: 15px 0;
+}
+
+.info-block {
+  text-align: center;
+}
+
+.info-label {
   font-size: 0.9rem;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(58, 83, 49, 0.2);
-  margin-bottom: 15px;
-  transition: opacity 0.2s;
-}
-
-#btn-add-task:hover {
-  opacity: 0.9;
-}
-
-/* Tarjeta / Formulario desplegable para agregar o editar tareas */
-#dropdown-form-card {
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 16px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
-
-#dropdown-form-card input[type="text"],
-#dropdown-form-card select,
-#dropdown-form-card input[type="number"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #b2c6a4;
-  border-radius: 12px;
-  background: #ffffff;
-  color: var(--text-main);
-  font-size: 0.85rem;
-  margin-bottom: 10px;
-  outline: none;
-}
-
-.pomo-input-container, #group-section-container {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent-dark);
-  margin-bottom: 10px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.form-actions button {
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.8rem;
-  cursor: pointer;
-  border: none;
-}
-
-.form-actions button:first-child {
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--text-main);
-}
-
-#btn-save-task {
-  background: var(--accent-dark);
-  color: var(--text-light);
-}
-
-/* Contenedores de grupos y tareas */
-#groups-container, #ungrouped-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Estilo para las tarjetas de grupos de tareas */
-.task-group-card {
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 16px;
-  padding: 12px 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-}
-
-.task-group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--accent-dark);
-  cursor: pointer;
-}
-
-/* Ítems individuales dentro de la lista de tareas (Checklist compacto) */
-.task-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 10px 12px;
-  border-radius: 12px;
-  margin-top: 8px;
-  transition: all 0.2s ease;
-}
-
-/* Resaltado especial para la tarea seleccionada actual */
-.task-item.active-task {
-  background: #ffffff !important;
-  border: 2px solid var(--accent-dark);
-  box-shadow: 0 4px 12px rgba(58, 83, 49, 0.15);
-}
-
-.task-item-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
+  color: var(--text-dark);
+  opacity: 0.75;
   font-weight: 600;
-  color: var(--text-main);
 }
 
-.task-item-actions {
+.info-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-top: 2px;
+}
+
+/* Ilustración inferior */
+.illustration-card {
+  width: 100%;
+  background-color: var(--window-bg);
+  border-radius: 22px;
+  padding: 12px;
   display: flex;
-  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
 }
 
-.task-edit-btn, .task-delete-btn {
-  background: transparent;
+/* =========================================
+   2. SECCIÓN DERECHA: TAREAS
+   ========================================= */
+.tasks-container {
+  background-color: var(--tasks-body);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease;
+}
+
+/* Header Verde Oscuro */
+.tasks-header {
+  position: relative;
+  background-color: var(--tasks-header);
+  color: #ffffff;
+  padding: 22px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+}
+
+.tasks-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.btn-add-task {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-add-task:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Lista de Tareas y Grupos */
+.tasks-list-wrapper, .tasks-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.group-item {
+  margin-bottom: 10px;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 5px;
+  color: var(--text-dark);
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+}
+
+.group-tasks {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.group-tasks.open {
+  display: flex;
+}
+
+.task-row {
+  background-color: var(--task-item-bg);
+  color: var(--text-dark);
+  border-radius: 25px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  transition: background-color 0.3s ease;
+}
+
+.task-row.task-active {
+  border: 2px solid var(--btn-dark);
+}
+
+.task-row.completed .task-text {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-text {
+  flex: 1;
+  margin-left: 10px;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.92rem;
+}
+
+.task-meta-info {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  background-color: var(--meta-info-bg);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin: 0 8px;
+}
+
+.task-action-icon-btn {
+  background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  color: var(--text-dark);
+  font-size: 1rem;
+  padding: 2px 4px;
+  opacity: 0.8;
 }
 
-.task-edit-btn:hover, .task-delete-btn:hover {
+.task-action-icon-btn:hover {
   opacity: 1;
 }
 
-
-/* --- VENTANA MODAL DE CONFIGURACIÓN (SETTINGS) REDONDEADA --- */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(39, 56, 33, 0.4);
-  backdrop-filter: blur(4px);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal.active {
+/* Checkbox estilo píldora/cuadro redondeado */
+.checkbox, .task-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid var(--btn-dark);
   display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: transparent;
+  appearance: none;
+  outline: none;
 }
 
-.modal-content {
-  background: #eaf2e6;
-  color: var(--text-main);
-  width: 90%;
-  max-width: 420px;
-  border-radius: 24px;
-  padding: 25px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-  border: 3px solid #b2c6a4;
+.checkbox.checked, .task-checkbox:checked {
+  background-color: var(--btn-dark);
+  color: white;
 }
 
-.modal-content h2 {
-  font-weight: 800;
+.task-checkbox:checked::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+}
+
+/* =========================================
+   POPOVER DE CONFIGURACIÓN (SETTINGS)
+   ========================================= */
+
+.settings-popover {
+  display: none; /* Oculto por defecto */
+  position: absolute;
+  top: 75px;
+  right: 28px;
+  width: 320px;
+  background-color: var(--popover-bg);
+  border-radius: 22px;
+  padding: 20px 22px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--input-border);
+  z-index: 1000;
+  color: var(--text-dark);
+  transition: background-color 0.3s ease;
+}
+
+.settings-popover.active {
+  display: block;
+}
+
+/* Flechita apuntando arriba */
+.settings-popover::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 22px;
+  width: 14px;
+  height: 14px;
+  background-color: var(--popover-bg);
+  transform: rotate(45deg);
+  border-top: 1px solid var(--input-border);
+  border-left: 1px solid var(--input-border);
+}
+
+.settings-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-dark);
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Control manual de número (+ / - / input) */
+.number-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.number-control button {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background-color: transparent;
+  color: var(--text-dark);
   font-size: 1.1rem;
-  color: var(--accent-dark);
-  margin-bottom: 15px;
-  border-bottom: 2px solid rgba(58, 83, 49, 0.1);
-  padding-bottom: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
 }
 
-.modal-content label {
+.number-control button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.number-control input[type="number"] {
+  width: 44px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background-color: transparent;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  -moz-appearance: textfield;
+}
+
+.number-control input::-webkit-outer-spin-button,
+.number-control input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Desplegables Select */
+.settings-select, .custom-select {
+  padding: 5px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--input-border);
+  background-color: var(--popover-bg);
+  font-weight: 600;
+  color: var(--text-dark);
+  outline: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Switch Toggle (Interruptor) */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--input-border);
+  transition: .25s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: .25s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--btn-dark);
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* =========================================
+   POPOVER / MODAL DE EDITAR TAREA
+   ========================================= */
+
+.task-popover, .task-modal-content {
+  position: absolute;
+  top: 45px;
+  right: 10px;
+  z-index: 1000;
+  width: 280px;
+  background: var(--popover-bg);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--input-border);
+  color: var(--text-dark);
+}
+
+.task-popover::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 25px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid var(--popover-bg);
+}
+
+.task-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.task-modal-header h3 {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.btn-icon-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text-dark);
+}
+
+.form-group {
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  font-size: 0.8rem;
+  gap: 5px;
+}
+
+.form-group.row-align {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-group label {
   font-weight: 700;
-  color: var(--accent-dark);
-  margin-bottom: 10px;
+  color: var(--text-dark);
+  font-size: 0.85rem;
 }
 
-.modal-content input[type="number"] {
-  padding: 8px;
-  border: 1px solid #b2c6a4;
-  border-radius: 10px;
-  margin-top: 4px;
-  background: #ffffff;
-  color: var(--accent-dark);
-  font-weight: bold;
+.form-group input[type="text"] {
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background-color: var(--task-item-bg);
+  color: var(--text-dark);
+  font-weight: 600;
+  outline: none;
 }
 
-.modal-content input[type="checkbox"] {
-  margin-right: 8px;
+.task-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
 }
 
-.modal-content button {
-  background: var(--accent-dark);
+.btn-primary {
+  flex: 1;
+  background-color: var(--btn-dark);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 14px;
-  font-weight: bold;
+  padding: 8px;
+  border-radius: 12px;
+  font-weight: 700;
   cursor: pointer;
-  margin-top: 10px;
-  box-shadow: 0 4px 10px rgba(58, 83, 49, 0.2);
+}
+
+.btn-secondary {
+  flex: 1;
+  background-color: var(--input-border);
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-danger {
+  flex: 1;
+  background-color: #c94a4a;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
