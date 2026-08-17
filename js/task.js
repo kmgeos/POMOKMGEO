@@ -1,35 +1,22 @@
 let selectedTaskFullTitle = "";
 let creatingNewGroupInline = false;
 let editingTaskId = null; 
+let ungroupedOpen = true; // Estado global para abrir/cerrar 'Tareas sin grupo'
 
 function renderGroups() {
   const groupsContainer = document.getElementById('groups-container');
   if (!groupsContainer) return;
   groupsContainer.innerHTML = '';
+  
   const ungroupedContainer = document.getElementById('ungrouped-container');
   if (ungroupedContainer) {
     ungroupedContainer.innerHTML = '';
   }
-  const selectTaskGroup = document.getElementById('select-task-group');
-  if (selectTaskGroup) {
-    selectTaskGroup.innerHTML = '';
-    
-    const optNone = document.createElement('option');
-    optNone.value = "";
-    optNone.textContent = "-- Sin grupo --";
-    selectTaskGroup.appendChild(optNone);
-    groups.forEach(group => {
-      const opt = document.createElement('option');
-      opt.value = group.id;
-      opt.textContent = group.name;
-      selectTaskGroup.appendChild(opt);
-    });
-    const optNew = document.createElement('option');
-    optNew.value = "NEW";
-    optNew.textContent = "+ Crear nuevo grupo...";
-    selectTaskGroup.appendChild(optNew);
-  }
-  // Renderizar Grupos
+
+  // Poblar el menú selector de grupos en el modal
+  populateGroupDropdown();
+
+  // Renderizar Grupos con sus tareas
   groups.forEach(group => {
     const groupEl = document.createElement('div');
     groupEl.className = 'group-item';
@@ -50,6 +37,7 @@ function renderGroups() {
         </div>
       `;
     }).join('');
+
     groupEl.innerHTML = `
       <div class="group-header" onclick="toggleGroup(${group.id})">
         <span style="flex: 1; cursor: pointer;">
@@ -66,7 +54,8 @@ function renderGroups() {
     `;
     groupsContainer.appendChild(groupEl);
   });
-  // Renderizar Tareas Sin Grupo
+
+  // Renderizar Tareas Sin Grupo (Con soporte para Minimizar/Expandir)
   if (ungroupedTasks.length > 0 && ungroupedContainer) {
     const ungroupedEl = document.createElement('div');
     ungroupedEl.className = 'group-item';
@@ -87,45 +76,88 @@ function renderGroups() {
         </div>
       `;
     }).join('');
+
     ungroupedEl.innerHTML = `
-      <div class="group-header" style="background: rgba(0,0,0,0.25);">
-        <span>▼ Tareas sin grupo (${completedUngrouped}/${ungroupedTasks.length})</span>
+      <div class="group-header" onclick="toggleUngroupedGroup()" style="cursor: pointer; background: rgba(0,0,0,0.25);">
+        <span>${ungroupedOpen ? '▼' : '▶'} Tareas sin grupo (${completedUngrouped}/${ungroupedTasks.length})</span>
       </div>
-      <div class="group-tasks open">
+      <div class="group-tasks ${ungroupedOpen ? 'open' : ''}">
         ${ungroupedTasksHtml}
       </div>
     `;
     ungroupedContainer.appendChild(ungroupedEl);
   }
+
   updateTaskTitle();
   if (typeof saveData === 'function') saveData();
+}
+
+function toggleUngroupedGroup() {
+  ungroupedOpen = !ungroupedOpen;
+  renderGroups();
+}
+
+function populateGroupDropdown() {
+  const selectTaskGroup = document.getElementById('select-task-group');
+  if (!selectTaskGroup) return;
+  
+  selectTaskGroup.innerHTML = '';
+  
+  const optNone = document.createElement('option');
+  optNone.value = "";
+  optNone.textContent = "-- Sin grupo --";
+  selectTaskGroup.appendChild(optNone);
+
+  if (Array.isArray(groups)) {
+    groups.forEach(group => {
+      const opt = document.createElement('option');
+      opt.value = group.id;
+      opt.textContent = group.name;
+      selectTaskGroup.appendChild(opt);
+    });
+  }
+
+  const optNew = document.createElement('option');
+  optNew.value = "NEW";
+  optNew.textContent = "+ Crear nuevo grupo...";
+  selectTaskGroup.appendChild(optNew);
 }
 
 function openAddForm() {
   editingTaskId = null;
   const card = document.getElementById('dropdown-form-card');
   if (card) card.style.display = 'block';
+
   const taskNameInput = document.getElementById('input-task-name');
   if (taskNameInput) {
-    taskNameInput.focus();
     taskNameInput.value = '';
+    taskNameInput.focus();
   }
+
   const taskPomoInput = document.getElementById('input-task-pomo');
   if (taskPomoInput) taskPomoInput.value = '1';
+
   const groupContainer = document.getElementById('group-section-container');
-  if (groupContainer) groupContainer.style.display = 'none';
+  if (groupContainer) groupContainer.style.display = 'block';
+
+  const toggleCheck = document.getElementById('toggle-group-check');
+  if (toggleCheck) toggleCheck.checked = true;
+
   const newGroupContainer = document.getElementById('new-group-input-container');
   if (newGroupContainer) newGroupContainer.style.display = 'none';
+
   const deleteBtn = document.getElementById('btn-delete-task-trash');
   if (deleteBtn) deleteBtn.style.display = 'none';
+
   creatingNewGroupInline = false;
-  renderGroups();
+  populateGroupDropdown();
 }
 
 function openEditTask(locationType, groupId, taskId) {
   editingTaskId = taskId;
   let taskToEdit = null;
   let currentGroup = null;
+
   if (locationType === 'ungrouped') {
     taskToEdit = ungroupedTasks.find(t => t.id === taskId);
   } else {
@@ -134,29 +166,43 @@ function openEditTask(locationType, groupId, taskId) {
       taskToEdit = currentGroup.tasks.find(t => t.id === taskId);
     }
   }
+
   if (!taskToEdit) return;
+
   const card = document.getElementById('dropdown-form-card');
   if (card) card.style.display = 'block';
+
   const taskNameInput = document.getElementById('input-task-name');
   if (taskNameInput) taskNameInput.value = taskToEdit.text;
+
   const taskPomoInput = document.getElementById('input-task-pomo');
   if (taskPomoInput) taskPomoInput.value = taskToEdit.estPomos || 1;
+
   const deleteBtn = document.getElementById('btn-delete-task-trash');
   if (deleteBtn) deleteBtn.style.display = 'block';
+
+  populateGroupDropdown();
+
   const selectGroup = document.getElementById('select-task-group');
   const groupContainer = document.getElementById('group-section-container');
+  const toggleCheck = document.getElementById('toggle-group-check');
+
   if (selectGroup && groupContainer) {
     if (currentGroup) {
       selectGroup.value = currentGroup.id;
       groupContainer.style.display = 'block';
+      if (toggleCheck) toggleCheck.checked = true;
     } else {
       selectGroup.value = "";
       groupContainer.style.display = 'none';
+      if (toggleCheck) toggleCheck.checked = false;
     }
   }
+
   const newGroupContainer = document.getElementById('new-group-input-container');
   if (newGroupContainer) newGroupContainer.style.display = 'none';
   creatingNewGroupInline = false;
+
   if (taskNameInput) taskNameInput.focus();
 }
 
@@ -169,13 +215,23 @@ function closeAddForm() {
 function saveDropdownForm() {
   const taskNameInput = document.getElementById('input-task-name');
   const taskPomoInput = document.getElementById('input-task-pomo');
+  const groupContainer = document.getElementById('group-section-container');
   const taskGroupSelect = document.getElementById('select-task-group');
   const newGroupNameInput = document.getElementById('input-new-group-name');
+
   if (!taskNameInput) return;
   const taskName = taskNameInput.value.trim();
-  if (!taskName) return;
+  if (!taskName) return; 
+
   const estPomos = taskPomoInput ? (parseInt(taskPomoInput.value) || 1) : 1;
+
+  if (!Array.isArray(groups)) groups = [];
+  if (!Array.isArray(ungroupedTasks)) ungroupedTasks = [];
+
+  const isGroupSectionVisible = groupContainer && groupContainer.style.display !== 'none';
+
   if (editingTaskId !== null) {
+    // --- EDICIÓN ---
     let foundTask = null;
     ungroupedTasks = ungroupedTasks.filter(t => {
       if (t.id === editingTaskId) { foundTask = t; return false; }
@@ -187,34 +243,14 @@ function saveDropdownForm() {
         return true;
       });
     });
+
     if (foundTask) {
       foundTask.text = taskName;
       foundTask.estPomos = estPomos;
-      if (creatingNewGroupInline || (taskGroupSelect && taskGroupSelect.value === "NEW")) {
-        const newGroupName = newGroupNameInput ? newGroupNameInput.value.trim() : "General";
-        let targetGroup = groups.find(g => g.name.toLowerCase() === newGroupName.toLowerCase());
-        if (!targetGroup) {
-          targetGroup = { id: Date.now(), name: newGroupName, open: true, tasks: [] };
-          groups.push(targetGroup);
-        }
-        targetGroup.tasks.push(foundTask);
-        selectedTaskFullTitle = `${targetGroup.name} - ${foundTask.text}`;
-      } else if (taskGroupSelect && taskGroupSelect.value !== "") {
-        const groupId = parseInt(taskGroupSelect.value);
-        let targetGroup = groups.find(g => g.id === groupId);
-        if (targetGroup) {
-          targetGroup.tasks.push(foundTask);
-          selectedTaskFullTitle = `${targetGroup.name} - ${foundTask.text}`;
-        } else {
-          ungroupedTasks.push(foundTask);
-          selectedTaskFullTitle = foundTask.text;
-        }
-      } else {
-        ungroupedTasks.push(foundTask);
-        selectedTaskFullTitle = foundTask.text;
-      }
+      insertTaskIntoStructure(foundTask, isGroupSectionVisible, taskGroupSelect, newGroupNameInput);
     }
   } else {
+    // --- CREACIÓN ---
     const newTask = {
       id: Date.now(),
       text: taskName,
@@ -222,34 +258,39 @@ function saveDropdownForm() {
       estPomos: estPomos,
       completedPomos: 0
     };
-    if (creatingNewGroupInline || (taskGroupSelect && taskGroupSelect.value === "NEW")) {
-      const newGroupName = newGroupNameInput ? newGroupNameInput.value.trim() : "General";
-      let targetGroup = groups.find(g => g.name.toLowerCase() === newGroupName.toLowerCase());
-      if (!targetGroup) {
-        targetGroup = { id: Date.now(), name: newGroupName, open: true, tasks: [] };
-        groups.push(targetGroup);
-      }
-      targetGroup.tasks.push(newTask);
-      targetGroup.open = true;
-      selectedTaskFullTitle = `${targetGroup.name} - ${newTask.text}`;
-    } else if (taskGroupSelect && taskGroupSelect.value !== "") {
-      const groupId = parseInt(taskGroupSelect.value);
-      let targetGroup = groups.find(g => g.id === groupId);
-      if (targetGroup) {
-        targetGroup.tasks.push(newTask);
-        targetGroup.open = true;
-        selectedTaskFullTitle = `${targetGroup.name} - ${newTask.text}`;
-      } else {
-        ungroupedTasks.push(newTask);
-        selectedTaskFullTitle = newTask.text;
-      }
-    } else {
-      ungroupedTasks.push(newTask);
-      selectedTaskFullTitle = newTask.text;
-    }
+    insertTaskIntoStructure(newTask, isGroupSectionVisible, taskGroupSelect, newGroupNameInput);
   }
+
   closeAddForm();
   renderGroups();
+}
+
+function insertTaskIntoStructure(taskObj, isGroupVisible, taskGroupSelect, newGroupNameInput) {
+  if (isGroupVisible && (creatingNewGroupInline || (taskGroupSelect && taskGroupSelect.value === "NEW"))) {
+    const newGroupName = (newGroupNameInput && newGroupNameInput.value.trim()) ? newGroupNameInput.value.trim() : "General";
+    let targetGroup = groups.find(g => g.name.toLowerCase() === newGroupName.toLowerCase());
+    if (!targetGroup) {
+      targetGroup = { id: Date.now(), name: newGroupName, open: true, tasks: [] };
+      groups.push(targetGroup);
+    }
+    targetGroup.tasks.push(taskObj);
+    targetGroup.open = true;
+    selectedTaskFullTitle = `${targetGroup.name} - ${taskObj.text}`;
+  } else if (isGroupVisible && taskGroupSelect && taskGroupSelect.value !== "") {
+    const groupId = parseInt(taskGroupSelect.value);
+    let targetGroup = groups.find(g => g.id === groupId);
+    if (targetGroup) {
+      targetGroup.tasks.push(taskObj);
+      targetGroup.open = true;
+      selectedTaskFullTitle = `${targetGroup.name} - ${taskObj.text}`;
+    } else {
+      ungroupedTasks.push(taskObj);
+      selectedTaskFullTitle = taskObj.text;
+    }
+  } else {
+    ungroupedTasks.push(taskObj);
+    selectedTaskFullTitle = taskObj.text;
+  }
 }
 
 function deleteCurrentEditingTask() {
@@ -338,7 +379,7 @@ function onGroupSelectChange(val) {
 }
 
 function escapeQuotes(str) {
-  return str.replace(/'/g, "\\'");
+  return str ? str.replace(/'/g, "\\'") : '';
 }
 
 function selectTaskDirectly(fullTaskName) {
@@ -355,36 +396,29 @@ function toggleGroup(groupId) {
 }
 
 function toggleTask(locationType, groupId, taskId) {
-  let targetTask = null;
+  let task = null;
   if (locationType === 'ungrouped') {
-    targetTask = ungroupedTasks.find(t => t.id === taskId);
+    task = ungroupedTasks.find(t => t.id === taskId);
   } else {
     const group = groups.find(g => g.id === groupId);
-    if (group) {
-      targetTask = group.tasks.find(t => t.id === taskId);
-    }
+    if (group) task = group.tasks.find(t => t.id === taskId);
   }
-
-  if (targetTask) {
-    targetTask.completed = !targetTask.completed;
-    
-    // Si se activa "Check to Bottom" en la configuración y la tarea se completó
-    if (targetTask.completed && config.checkBottom) {
-      if (locationType === 'ungrouped') {
-        ungroupedTasks = ungroupedTasks.filter(t => t.id !== taskId);
-        ungroupedTasks.push(targetTask);
-      } else {
-        const group = groups.find(g => g.id === groupId);
-        if (group) {
-          group.tasks = group.tasks.filter(t => t.id !== taskId);
-          group.tasks.push(targetTask);
-        }
-      }
-    }
+  if (task) {
+    task.completed = !task.completed;
     renderGroups();
   }
 }
 
+function updateTaskTitle() {
+  const titleDisplay = document.getElementById('task-title-display');
+  if (titleDisplay) {
+    titleDisplay.textContent = selectedTaskFullTitle || "SIN TAREA SELECCIONADA";
+  }
+}
+
+// Inicializar la vista al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
-  renderGroups();
+  if (typeof renderGroups === 'function') {
+    renderGroups();
+  }
 });
