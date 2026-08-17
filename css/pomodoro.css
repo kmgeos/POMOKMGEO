@@ -1,5 +1,5 @@
 :root {
-  --bg-main: #b8d4af;
+  --bg-main: #a8cca0;
   --card-bg: #8fb383;
   --panel-bg: #9ec191;
   --accent-dark: #3b5231;
@@ -19,7 +19,7 @@ body.mode-longBreak { background-color: #8dae9e; }
 }
 
 body {
-  background-color: var(--bg-main);
+  background-color: var(--bg-main) !important;
   color: var(--text-main);
   display: flex;
   justify-content: center;
@@ -32,7 +32,7 @@ body {
 .app-container {
   width: 100%;
   max-width: 900px;
-  background: #cbe3c3;
+  background: #cbe3c3 !important;
   border-radius: 24px;
   padding: 30px;
   display: grid;
@@ -48,7 +48,7 @@ body {
 
 /* Tarjetas principales */
 .card {
-  background: var(--card-bg);
+  background: var(--card-bg) !important;
   border-radius: 20px;
   padding: 22px;
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3), 0 4px 10px rgba(0,0,0,0.05);
@@ -61,7 +61,7 @@ body {
   align-items: center;
 }
 
-/* Botones de modo (Pill superior) */
+/* Botones de modo */
 .mode-buttons {
   display: flex;
   background: rgba(47, 68, 39, 0.15);
@@ -85,8 +85,8 @@ body {
 }
 
 .mode-btn.active {
-  background: var(--accent-dark);
-  color: var(--text-light);
+  background: var(--accent-dark) !important;
+  color: var(--text-light) !important;
   opacity: 1;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
@@ -101,7 +101,7 @@ body {
   line-height: 1;
 }
 
-/* Botones de Control (Restart, Play/Pause, Skip, Settings) */
+/* Controles de Botones */
 .controls-row {
   display: flex;
   align-items: center;
@@ -110,8 +110,8 @@ body {
 }
 
 .main-btn {
-  background: var(--accent-dark);
-  color: var(--text-light);
+  background: var(--accent-dark) !important;
+  color: var(--text-light) !important;
   border: none;
   padding: 10px 24px;
   font-size: 1rem;
@@ -119,42 +119,27 @@ body {
   border-radius: 30px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .secondary-btn {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.7) !important;
   border: none;
-  color: #2b3e23;
+  color: #2b3e23 !important;
   padding: 10px 14px;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: background 0.2s;
 }
 
-.secondary-btn:hover {
-  background: #ffffff;
-}
-
-/* Etiquetas inferiores (Counter y Tarea actual) */
+/* Etiquetas inferiores */
 .info-row {
   display: flex;
   justify-content: space-between;
   width: 100%;
   padding: 0 10px;
   margin-bottom: 18px;
-}
-
-.info-box {
-  text-align: center;
 }
 
 .info-label {
@@ -172,7 +157,7 @@ body {
   color: #2b3e23;
 }
 
-/* Contenedor de la ilustración / Imagen inferior */
+/* Contenedor de la ilustración */
 .gif-container {
   width: 100%;
   max-width: 250px;
@@ -183,7 +168,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
 }
 
 #gif-display {
@@ -194,7 +178,7 @@ body {
 
 /* Sección Tareas (Derecha) */
 .tasks-section {
-  background: var(--panel-bg);
+  background: var(--panel-bg) !important;
   display: flex;
   flex-direction: column;
 }
@@ -226,15 +210,15 @@ body {
   cursor: pointer;
 }
 
-/* Ocultar modal de configuraciones por defecto para que no estorbe */
+/* OCULTAR EL MODAL DE SETTINGS POR DEFECTO PARA QUE NO ESTORBE */
 #modal-settings {
-  display: none;
+  display: none !important;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #d4e8cc;
-  color: #2b3e23;
+  background: #d4e8cc !important;
+  color: #2b3e23 !important;
   padding: 25px;
   border-radius: 20px;
   box-shadow: 0 15px 40px rgba(0,0,0,0.25);
@@ -244,5 +228,5 @@ body {
 }
 
 #modal-settings.active {
-  display: block;
+  display: block !important;
 }
