@@ -1,11 +1,25 @@
 let currentMode = 'pomodoro'; 
 let timeLeft = config.pomodoro * 60;
-let endTime = null; // 👈 NUEVO: Guardará la hora exacta en que debe terminar
+let endTime = null; // Guardará la hora exacta en que debe terminar
 let timerInterval = null;
 let transitionInterval = null;
 let isRunning = false;
 let pomodoroCount = 1;
 let isTransitioning = false;
+
+/* 🐱 CONFIGURACIÓN DE IMÁGENES DE PUSHEEN */
+const pusheenImages = {
+  pomodoro: 'assets/PUSHEEN.FOCUS.gif',
+  shortBreak: 'assets/PUSHEEN.2.gif',
+  longBreak: 'assets/PUSHEEN.SLEEP.gif'
+};
+
+function updateTimerImage() {
+  const timerImage = document.getElementById('timer-image');
+  if (timerImage && pusheenImages[currentMode]) {
+    timerImage.src = pusheenImages[currentMode];
+  }
+}
 
 const timerDisplay = document.getElementById('timer-display');
 const startBtn = document.getElementById('start-btn');
@@ -20,7 +34,7 @@ function updateTimerDisplay() {
   }
 }
 
-/* INCISO 3: Descripción Clara en Intervalos de Descanso */
+/* Descripción Clara en Intervalos de Descanso */
 function updateCounterDisplay() {
   if (!counterDisplay) return;
   if (isTransitioning) return;
@@ -35,7 +49,7 @@ function updateCounterDisplay() {
   }
 }
 
-/* INCISO 2: Control de Tema y Modo Oscuro al Correr */
+/* Control de Tema y Modo Oscuro al Correr */
 function updateTheme() {
   document.body.dataset.mode = currentMode;
 
@@ -73,7 +87,6 @@ function toggleTimer() {
   }
 }
 
-/* 🛠️ MODIFICADO: startTimer() calcula endTime usando Date.now() */
 function startTimer() {
   clearInterval(transitionInterval);
   clearInterval(timerInterval);
@@ -86,18 +99,15 @@ function startTimer() {
     document.body.classList.add('dark-theme');
   }
 
-  // Se calcula la fecha final exacta a partir del tiempo que queda
   endTime = Date.now() + (timeLeft * 1000);
 
   timerInterval = setInterval(() => {
-    // Calculamos el tiempo real restante restando el reloj actual
     const remainingMs = endTime - Date.now();
     const previousTimeLeft = timeLeft;
     timeLeft = Math.max(0, Math.ceil(remainingMs / 1000));
 
     updateTimerDisplay();
 
-    // Recordatorio antes de finalizar (mantenemos tu notificación)
     if (config.reminderEnabled && previousTimeLeft !== timeLeft && timeLeft === config.reminderMin * 60) {
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification("¡Atención!", {
@@ -113,7 +123,6 @@ function startTimer() {
   }, 1000);
 }
 
-/* 🛠️ MODIFICADO: pauseTimer() conserva el timeLeft exacto */
 function pauseTimer() {
   clearInterval(timerInterval);
   clearInterval(transitionInterval);
@@ -174,6 +183,7 @@ function onTimerComplete() {
 
   currentMode = nextMode;
   updateTheme();
+  updateTimerImage(); // 👈 Actualiza el GIF al completar
   timeLeft = config[nextMode] * 60;
   updateTimerDisplay();
 
@@ -231,6 +241,7 @@ function switchMode(mode) {
   pauseTimer();
   currentMode = mode;
   updateTheme();
+  updateTimerImage(); // 👈 Actualiza el GIF al cambiar manualmente
   timeLeft = config[mode] * 60;
   updateTimerDisplay();
   updateCounterDisplay();
@@ -335,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
     elem.addEventListener('change', saveCurrentSettings);
   });
 
-  /* 🛠️ NUEVO: Escuchar cuando el usuario vuelve a la pestaña */
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && isRunning && endTime) {
       const remainingMs = endTime - Date.now();
@@ -346,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadSettingsToUI();
   updateTheme();
+  updateTimerImage(); // 👈 Carga inicial de la imagen
   updateTimerDisplay();
   updateCounterDisplay();
 });
