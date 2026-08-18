@@ -1,5 +1,6 @@
 let currentMode = 'pomodoro'; 
 let timeLeft = config.pomodoro * 60;
+let endTime = null; // 👈 NUEVO: Guardará la hora exacta en que debe terminar
 let timerInterval = null;
 let transitionInterval = null;
 let isRunning = false;
@@ -22,7 +23,6 @@ function updateTimerDisplay() {
 /* INCISO 3: Descripción Clara en Intervalos de Descanso */
 function updateCounterDisplay() {
   if (!counterDisplay) return;
-  // Si estamos en la pausa de 5 segundos, no sobrescribir la cuenta regresiva
   if (isTransitioning) return;
 
   if (currentMode === 'longBreak') {
@@ -37,25 +37,20 @@ function updateCounterDisplay() {
 
 /* INCISO 2: Control de Tema y Modo Oscuro al Correr */
 function updateTheme() {
-  // Sincronizar clase de modo general
   document.body.dataset.mode = currentMode;
 
-  // Si está corriendo y la opción de modo oscuro al activar está activa
   if (isRunning && config.darkModeRunning) {
     document.body.classList.add('dark-theme');
   } else if (!config.darkModeAlways) {
-    // Si no hay un modo oscuro global permanente, remover al pausar/detener
     document.body.classList.remove('dark-theme');
   }
 
-  // Actualizar estado visual de pestañas
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`btn-${currentMode}`);
   if (activeBtn) activeBtn.classList.add('active');
 }
 
 function toggleTimer() {
-  // Reproducir siempre gatcha.mp3 al pulsar el botón Iniciar / Pausa
   const clickSound = document.getElementById('click-audio');
   if (clickSound) { 
     clickSound.src = 'assets/gatcha.mp3';
@@ -63,7 +58,6 @@ function toggleTimer() {
     clickSound.play().catch(e => console.log("Error al reproducir gatcha.mp3:", e)); 
   }
 
-  // Si estamos en la pausa de 5 segundos y el usuario pulsa START, inicia inmediatamente
   if (isTransitioning) {
     clearInterval(transitionInterval);
     isTransitioning = false;
@@ -79,6 +73,7 @@ function toggleTimer() {
   }
 }
 
+/* 🛠️ MODIFICADO: startTimer() calcula endTime usando Date.now() */
 function startTimer() {
   clearInterval(transitionInterval);
   clearInterval(timerInterval);
@@ -87,39 +82,51 @@ function startTimer() {
 
   if (startBtn) startBtn.textContent = "PAUSA";
   
-  // Activar modo oscuro si está configurado para ejecutarse mientras corre
   if (config.darkModeRunning) {
     document.body.classList.add('dark-theme');
   }
 
-  timerInterval = setInterval(() => {
-    if (timeLeft > 0) {
-      timeLeft--;
-      updateTimerDisplay();
+  // Se calcula la fecha final exacta a partir del tiempo que queda
+  endTime = Date.now() + (timeLeft * 1000);
 
-      // Recordatorio antes de finalizar
-      if (config.reminderEnabled && timeLeft === config.reminderMin * 60) {
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification("¡Atención!", {
-            body: `Te quedan ${config.reminderMin} min para finalizar el ${getModeLabel(currentMode)}.`
-          });
-        }
+  timerInterval = setInterval(() => {
+    // Calculamos el tiempo real restante restando el reloj actual
+    const remainingMs = endTime - Date.now();
+    const previousTimeLeft = timeLeft;
+    timeLeft = Math.max(0, Math.ceil(remainingMs / 1000));
+
+    updateTimerDisplay();
+
+    // Recordatorio antes de finalizar (mantenemos tu notificación)
+    if (config.reminderEnabled && previousTimeLeft !== timeLeft && timeLeft === config.reminderMin * 60) {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("¡Atención!", {
+          body: `Te quedan ${config.reminderMin} min para finalizar el ${getModeLabel(currentMode)}.`
+        });
       }
-    } else {
+    }
+
+    if (timeLeft <= 0) {
       clearInterval(timerInterval);
       onTimerComplete();
     }
   }, 1000);
 }
 
+/* 🛠️ MODIFICADO: pauseTimer() conserva el timeLeft exacto */
 function pauseTimer() {
   clearInterval(timerInterval);
   clearInterval(transitionInterval);
+  
+  if (isRunning && endTime) {
+    const remainingMs = endTime - Date.now();
+    timeLeft = Math.max(0, Math.ceil(remainingMs / 1000));
+  }
+  
   isRunning = false;
   isTransitioning = false;
   if (startBtn) startBtn.textContent = "INICIAR";
   
-  // Desactivar modo oscuro al pausar si dependía del temporizador
   if (config.darkModeRunning && !config.darkModeAlways) {
     document.body.classList.remove('dark-theme');
   }
@@ -133,14 +140,12 @@ function onTimerComplete() {
     document.body.classList.remove('dark-theme');
   }
 
-  // Incrementar +1 Pomodoro a la tarea activa únicamente si se completó un ciclo de trabajo
   if (currentMode === 'pomodoro') {
     if (typeof incrementActiveTaskPomo === 'function') {
       incrementActiveTaskPomo();
     }
   }
 
-  // Reproducir la Alarma seleccionada en la configuración
   const alarmSound = document.getElementById('alarm-audio');
   if (alarmSound) {
     alarmSound.src = `assets/${config.alarmSound}`;
@@ -148,7 +153,6 @@ function onTimerComplete() {
     alarmSound.play().catch(e => console.log("Error al reproducir la alarma:", e));
   }
 
-  // Notificación del sistema
   if ("Notification" in window && Notification.permission === "granted") {
     if (currentMode === 'pomodoro') {
       new Notification("¡Pomodoro Finalizado! ⏱️", { body: "Tómate un descanso bien merecido." });
@@ -157,7 +161,6 @@ function onTimerComplete() {
     }
   }
 
-  // Calcular siguiente modo de trabajo o descanso
   let nextMode = 'pomodoro';
   if (currentMode === 'pomodoro') {
     nextMode = (pomodoroCount >= config.longBreakInterval) ? 'longBreak' : 'shortBreak';
@@ -169,13 +172,11 @@ function onTimerComplete() {
     nextMode = 'pomodoro';
   }
 
-  // Transición de modo
   currentMode = nextMode;
   updateTheme();
   timeLeft = config[nextMode] * 60;
   updateTimerDisplay();
 
-  // Verificar si aplica el Auto Start
   const shouldAutoStart = (nextMode.includes('Break') && config.autoBreaks) || 
                           (nextMode === 'pomodoro' && config.autoPomos);
 
@@ -187,7 +188,6 @@ function onTimerComplete() {
   }
 }
 
-// Cuenta regresiva suave de 5 segundos para automáticos
 function startAutoStartCountdown() {
   clearInterval(transitionInterval);
   isTransitioning = true;
@@ -296,7 +296,6 @@ function saveCurrentSettings() {
   }
   updateCounterDisplay();
 
-  // Guardar en localStorage a través de data.js
   if (typeof saveData === 'function') {
     saveData();
   }
@@ -334,6 +333,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('#settings-popover input, #settings-popover select').forEach(elem => {
     elem.addEventListener('change', saveCurrentSettings);
+  });
+
+  /* 🛠️ NUEVO: Escuchar cuando el usuario vuelve a la pestaña */
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && isRunning && endTime) {
+      const remainingMs = endTime - Date.now();
+      timeLeft = Math.max(0, Math.ceil(remainingMs / 1000));
+      updateTimerDisplay();
+    }
   });
 
   loadSettingsToUI();
