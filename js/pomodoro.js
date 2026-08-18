@@ -133,6 +133,13 @@ function onTimerComplete() {
     document.body.classList.remove('dark-theme');
   }
 
+  // Incrementar +1 Pomodoro a la tarea activa únicamente si se completó un ciclo de trabajo
+  if (currentMode === 'pomodoro') {
+    if (typeof incrementActiveTaskPomo === 'function') {
+      incrementActiveTaskPomo();
+    }
+  }
+
   // Reproducir la Alarma seleccionada en la configuración
   const alarmSound = document.getElementById('alarm-audio');
   if (alarmSound) {
