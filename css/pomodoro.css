@@ -1,8 +1,8 @@
 :root {
   /* Paleta Normal (Clara) */
-  --bg-body: #e3ebd9;            /* Fondo exterior general */
-  --window-bg: #dcecc9;          /* Marco/Ventana principal */
-  --pomo-card: #9bb979;          /* Tarjeta izquierda Pomodoro */
+  --bg-body: #e3ebd9;             /* Fondo exterior general */
+  --window-bg: #dcecc9;           /* Marco/Ventana principal */
+  --pomo-card: #9bb979;           /* Tarjeta izquierda Pomodoro */
   --pomo-tab-bg: rgba(0, 0, 0, 0.08); /* Pestañas de descanso/trabajo */
   --pomo-tab-active: #3e5229;     /* Pestaña activa */
   --tasks-header: #3d5428;        /* Banner superior Tareas */
@@ -88,22 +88,17 @@ body {
 .dot-yellow { background-color: #ffbd2e; }
 .dot-green { background-color: #27c93f; }
 
-/* Cuerpo principal: Distribución de 2 columnas Lado a Lado */
+/* Cuerpo principal: Grid de 2 columnas */
 .app-body {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 28px;
   flex-grow: 1;
-  align-items: stretch;
-  width: 100%;
 }
 
 @media (max-width: 900px) {
   .app-body {
-    flex-direction: column;
-  }
-  .pomodoro-card {
-    width: 100% !important;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -119,8 +114,6 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  width: 380px;
-  flex-shrink: 0;
   transition: background-color 0.3s ease;
 }
 
@@ -195,7 +188,6 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 1.2rem;
-  font-weight: 700;
 }
 
 .btn-settings {
@@ -246,7 +238,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 140px;
+  min-height: 150px;
 }
 
 /* =========================================
@@ -259,8 +251,6 @@ body {
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  flex: 1; /* Ocupa todo el ancho restante */
-  width: 100%;
   transition: background-color 0.3s ease;
 }
 
@@ -277,7 +267,7 @@ body {
   border-top-right-radius: 28px;
 }
 
-.tasks-header h2 {
+.tasks-title {
   font-size: 2.2rem;
   font-weight: 700;
 }
@@ -465,12 +455,6 @@ body {
   font-weight: 600;
 }
 
-.settings-row.flex-column {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-
 /* Control manual de número (+ / - / input) */
 .number-control {
   display: flex;
@@ -577,10 +561,30 @@ input:checked + .slider:before {
    POPOVER / MODAL DE EDITAR TAREA
    ========================================= */
 
-.task-popover {
-  top: 65px;
-  right: 20px;
-  width: 300px;
+.task-popover, .task-modal-content {
+  position: absolute;
+  top: 45px;
+  right: 10px;
+  z-index: 1000;
+  width: 280px;
+  background: var(--popover-bg);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--input-border);
+  color: var(--text-dark);
+}
+
+.task-popover::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 25px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid var(--popover-bg);
 }
 
 .task-modal-header {
@@ -605,9 +609,26 @@ input:checked + .slider:before {
   color: var(--text-dark);
 }
 
-.form-group input[type="text"], 
-.settings-row input[type="text"] {
-  width: 100%;
+.form-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group.row-align {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-group label {
+  font-weight: 700;
+  color: var(--text-dark);
+  font-size: 0.85rem;
+}
+
+.form-group input[type="text"] {
   border: 1px solid var(--input-border);
   border-radius: 12px;
   padding: 8px 12px;
@@ -616,14 +637,42 @@ input:checked + .slider:before {
   font-weight: 600;
   outline: none;
 }
-/* Posicionamiento del popover de tareas */
-.tasks-container {
-  position: relative !important;
+
+.task-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
 }
 
-.task-popover {
-  position: absolute !important;
-  top: 70px !important;
-  right: 20px !important;
-  z-index: 100 !important;
+.btn-primary {
+  flex: 1;
+  background-color: var(--btn-dark);
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  flex: 1;
+  background-color: var(--input-border);
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-danger {
+  flex: 1;
+  background-color: #c94a4a;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
