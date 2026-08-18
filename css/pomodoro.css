@@ -676,3 +676,25 @@ input:checked + .slider:before {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* 1. Organizar el cuerpo principal en 2 columnas lado a lado */
+.app-body {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 2. Fijar el ancho de la tarjeta del Pomodoro */
+.pomodoro-card {
+  width: 380px;
+  flex-shrink: 0; /* Evita que la tarjeta se encoja */
+}
+
+/* 3. Hacer que el contenedor de Tareas ocupe todo el espacio derecho restante */
+.tasks-container {
+  flex: 1; /* Ocupa todo el espacio disponible a la derecha */
+  width: 100%;
+}
