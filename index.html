@@ -30,7 +30,7 @@
 
     <div class="app-body">
       
-      <!-- SECCIÓN POMODORO -->
+      <!-- 1. SECCIÓN POMODORO (COLUMNA IZQUIERDA) -->
       <div class="pomodoro-card">
 
         <!-- Pestañas de Modos -->
@@ -140,14 +140,14 @@
           <!-- Alarm Sound -->
           <div class="settings-row">
             <span>Alarm Sound</span>
-            <select id="input-alarm-sound">
-  <option value="alarm_clock.mp3">Alarm Clock</option>
-  <option value="nana.mp3">Nana</option>
-  <option value="perepere.mp3">Perepere</option>
-  <option value="prueba.mp3">Prueba</option>
-  <option value="rezero.mp3">Re:Zero</option>
-  <option value="ticking.mp3">Ticking</option>
-</select>
+            <select id="input-alarm-sound" class="settings-select">
+              <option value="alarm_clock.mp3">Alarm Clock</option>
+              <option value="nana.mp3">Nana</option>
+              <option value="perepere.mp3">Perepere</option>
+              <option value="prueba.mp3">Prueba</option>
+              <option value="rezero.mp3">Re:Zero</option>
+              <option value="ticking.mp3">Ticking</option>
+            </select>
           </div>
 
           <!-- Dark mode when running -->
@@ -177,13 +177,15 @@
           <img id="timer-image" src="assets/PUSHEEN.FOCUS.gif" alt="Pusheen Temporizador" style="max-height: 110px; display: block; margin: 0 auto;">
         </div>
 
-<!-- CONTENEDOR PRINCIPAL DE TAREAS -->
+      </div> <!-- 👈 CIERRE CORRECTO DE LA TARJETA DEL POMODORO -->
+
+      <!-- 2. SECCIÓN TAREAS (COLUMNA DERECHA) -->
       <section class="tasks-container">
         <div class="tasks-header" style="position: relative;">
           <h2>Tareas</h2>
           <button id="btn-open-add-task" class="btn-add-task" onclick="openAddForm()">+ Tarea</button>
 
-          <!-- POPOVER FLOTANTE DE TAREAS (Anidado al estilo Settings del Timer) -->
+          <!-- POPOVER FLOTANTE DE TAREAS -->
           <div id="dropdown-form-card" class="settings-popover task-popover" style="display: none;">
             <div class="task-modal-header">
               <h3 class="settings-title">⚙ Settings - Tareas</h3>
@@ -248,7 +250,9 @@
           <div id="ungrouped-container"></div>
         </div>
       </section>
-  </div>
+
+    </div> <!-- Fin .app-body -->
+  </div> <!-- Fin .app-window -->
 
   <script>lucide.createIcons();</script>
   <script src="js/data.js"></script>
