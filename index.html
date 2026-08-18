@@ -30,7 +30,7 @@
 
     <div class="app-body">
       
-      <!-- 1. SECCIÓN POMODORO (COLUMNA IZQUIERDA) -->
+      <!-- SECCIÓN POMODORO -->
       <div class="pomodoro-card">
 
         <!-- Pestañas de Modos -->
@@ -140,14 +140,14 @@
           <!-- Alarm Sound -->
           <div class="settings-row">
             <span>Alarm Sound</span>
-            <select id="input-alarm-sound" class="settings-select">
-              <option value="alarm_clock.mp3">Alarm Clock</option>
-              <option value="nana.mp3">Nana</option>
-              <option value="perepere.mp3">Perepere</option>
-              <option value="prueba.mp3">Prueba</option>
-              <option value="rezero.mp3">Re:Zero</option>
-              <option value="ticking.mp3">Ticking</option>
-            </select>
+            <select id="input-alarm-sound">
+  <option value="alarm_clock.mp3">Alarm Clock</option>
+  <option value="nana.mp3">Nana</option>
+  <option value="perepere.mp3">Perepere</option>
+  <option value="prueba.mp3">Prueba</option>
+  <option value="rezero.mp3">Re:Zero</option>
+  <option value="ticking.mp3">Ticking</option>
+</select>
           </div>
 
           <!-- Dark mode when running -->
@@ -172,21 +172,31 @@
           </div>
         </div>
 
-        <!-- Ilustración / Gif local Pusheen -->
+        <!-- Ilustración / SVG -->
         <div class="illustration-card">
-          <img id="timer-image" src="assets/PUSHEEN.FOCUS.gif" alt="Pusheen Temporizador" style="max-height: 110px; display: block; margin: 0 auto;">
+          <svg width="240" height="110" viewBox="0 0 200 90" id="gif-display">
+            <path d="M25 75 L35 50 L45 75 Z" fill="#9bb979" stroke="#1e2d13" stroke-width="2"/>
+            <path d="M35 50 C 20 30, 20 15, 30 10 C 40 20, 35 35, 35 50" fill="#3d5428"/>
+            <path d="M35 50 C 50 30, 50 15, 40 10 C 30 20, 35 35, 35 50" fill="#7f9b62"/>
+            <rect x="20" y="75" width="30" height="10" rx="3" fill="#dcecc9" stroke="#1e2d13" stroke-width="2"/>
+            <rect x="60" y="70" width="12" height="15" rx="2" fill="#ffffff" stroke="#1e2d13" stroke-width="2"/>
+            <path d="M100 80 C 100 60, 120 50, 140 55 C 160 60, 165 80, 165 80 Z" fill="#ffffff" stroke="#1e2d13" stroke-width="2"/>
+            <circle cx="150" cy="50" r="14" fill="#ffffff" stroke="#1e2d13" stroke-width="2"/>
+            <rect x="80" y="78" width="80" height="7" fill="#dcecc9" stroke="#1e2d13" stroke-width="2"/>
+            <text x="168" y="40" fill="#1e2d13" font-size="10" font-weight="bold">z</text>
+            <text x="174" y="32" fill="#1e2d13" font-size="14" font-weight="bold">Z</text>
+          </svg>
         </div>
-
       </div>
 
-      <!-- 2. SECCIÓN TAREAS (COLUMNA DERECHA) -->
+<!-- CONTENEDOR PRINCIPAL DE TAREAS -->
       <section class="tasks-container">
-        <div class="tasks-header">
+        <div class="tasks-header" style="position: relative;">
           <h2>Tareas</h2>
           <button id="btn-open-add-task" class="btn-add-task" onclick="openAddForm()">+ Tarea</button>
 
-          <!-- POPOVER FLOTANTE DE TAREAS -->
-          <div id="dropdown-form-card" class="settings-popover task-popover">
+          <!-- POPOVER FLOTANTE DE TAREAS (Anidado al estilo Settings del Timer) -->
+          <div id="dropdown-form-card" class="settings-popover task-popover" style="display: none;">
             <div class="task-modal-header">
               <h3 class="settings-title">⚙ Settings - Tareas</h3>
               <button class="btn-icon-close" onclick="closeAddForm()">&times;</button>
@@ -250,9 +260,7 @@
           <div id="ungrouped-container"></div>
         </div>
       </section>
-
-    </div> <!-- Fin .app-body -->
-  </div> <!-- Fin .app-window -->
+  </div>
 
   <script>lucide.createIcons();</script>
   <script src="js/data.js"></script>
